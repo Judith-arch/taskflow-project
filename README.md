@@ -39,36 +39,36 @@ Build a task management app called TaskFlow that allows users to create, complet
 - [X] ~~Practice the Git workflow by creating a feature/setup branch, making a change, and merging it into main~~
 
 2. **Plan the application**
-- [X] ~~Design the TaskFlow interface before coding
-    - Concept developed in a doc on drive
-- [X] ~~Create a simple wireframe on paper or using a tool like Figma or Excalidraw
-- [X] ~~Define the main sections of the application: header, task list, form, and statistics panel
-- [X] ~~Define the actions the user will be able to perform: add tasks, mark tasks as completed, delete tasks, and view statistics
-- [X] Save a screenshot or image of the design in the docs/design folder within the repository
-- [X] ~~Write a brief explanation of the app’s design in the README
+- [X] ~~Design the TaskFlow interface before coding~~
+    - Concept developed in a doc on drive~~
+- [X] ~~Create a simple wireframe on paper or using a tool like Figma or Excalidraw~~
+- [X] ~~Define the main sections of the application: header, task list, form, and statistics panel~~
+- [X] ~~Define the actions the user will be able to perform: add tasks, mark tasks as completed, delete tasks, and view statistics~~
+- [X] ~~Save a screenshot or image of the design in the docs/design folder within the repository~~
+- [X] ~~Write a brief explanation of the app’s design in the README~~
 
 3. **Create the HTML structure**
-- [ ]Create the index.html file
-- [ ]Define the structure using semantic HTML (header, main, aside, footer)
-- [ ] Add a main title for the app
-- [ ] Create a form to add new tasks
-- [ ] Add a list to display the tasks
-- [ ] Create a sidebar to display statistics (total, completed, and pending)
-- [ ] Define a template or base structure for each task
-- [ ] Ensure the form has correctly associated label tags
-- [ ] Verify that there is only one h1 and that the headings follow a logical order
-- [ ] Validate the HTML using the W3C validator
+- [X] ~~Create the index.html file~~
+- [X] ~~Define the structure using semantic HTML (header, main, aside, footer)~~
+- [X] ~~Add a main title for the app~~
+- [X] ~~Create a form to add new tasks~~
+- [X] ~~Add a list to display the tasks~~
+- [X] ~~Create a sidebar to display statistics (total, completed, and pending)~~
+- [X] ~~Define a template or base structure for each task~~
+- [X] ~~Ensure the form has correctly associated label tags~~
+- [X] ~~Verify that there is only one h1 and that the headings follow a logical order~~
+- [X] ~~Validate the HTML using the W3C validator~~
 
 4. **Design the layout with CSS**
-- [ ] Create the style.css file
-- [ ] Define CSS variables in :root for colors, typography, and spacing
-- [ ] Apply a basic CSS reset
-- [ ] Design the application header
-- [ ] Create the main layout using Flexbox
-- [ ] Define a sidebar with a fixed width for statistics
-- [ ] Design the task cards with borders, padding, and shadows
-- [ ] Ensure the typography is legible (minimum 16px for inputs)
-- [ ] Add hover and focus states to buttons and inputs
+- [X] ~~Create the style.css file
+- [X] ~~Define CSS variables in :root for colors, typography, and spacing
+- [X] ~~Apply a basic CSS reset
+- [X] ~~Design the application header
+- [X] ~~Create the main layout using Flexbox
+- [X] ~~Define a sidebar with a fixed width for statistics
+- [X] ~~Design the task cards with borders, padding, and shadows
+- [X] ~~Ensure the typography is legible (minimum 16px for inputs)
+- [X] ~~Add hover and focus states to buttons and inputs
 
 5. **Make the app responsive**
 - [ ] Add media queries for small screens

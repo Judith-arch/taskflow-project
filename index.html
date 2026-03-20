@@ -36,104 +36,73 @@
         </aside>
 
         <main>
-            <!-- NAME of the project of the layout tasks -->
             <header>
                 <h2>Project Name</h2>
             </header>
 
-            <div>
-                <label>
-                    SearchBar:
-                    <input type="search" placeholder="Search...">
-                </label>
+            <div class="main-top">
                 <form id="taskForm">
-                    <!-- Task TITLE -->
-                    <label for="title">Name:</label>
-                    <input type="text" id="title" name="title">
-
-                    <!-- Task DEADLINE -->
-                    <label for="deadline">Deadline:</label>
-                    <input type="date" id="deadline" name="deadline">
-
-                    <!-- Task STATUS -->
-                    <label for="status">Status:</label>
-                    <input type="text" id="status" name="status">
-
-                    <!-- Task ASSIGNED -->
-                    <label for="assigned">Assigned:</label>
-                    <input type="text" id="assigned" name="assigned">
-
-                    <!-- Task ARCHIVE -->
-                    <label for="archive">Archive:</label>
-                    <input type="checkbox" id="archive" name="archive">
-
-                    <!-- ADD Task -->
-                    <button class="addTask">Add Task</button>
-
-                </form>
-
-                <ul>
-                    <li>Task 1</li>
-                    <li>Task 2</li>
-                    <li>Task 3</li>
-                </ul>
-
-                <template id="taskTemplate">
-                    <div class="task">
-                        <!-- TITLE -->
-                        <h2 class="title">Task title</h2>
-
-                        <!-- DEADLINE -->
-                        <p><strong>Deadline:</strong> <span class="deadline"> </span></p>
-
-                        <!-- STATUS -->
-                        <p>
-                            <strong>Status:</strong>
-                            <span class="status"></span>
-                        </p>
-
-                        <!-- ASSIGNED -->
-                        <p><strong>Assigned:</strong> <span class="assigned"></span></p>
-
-                        <!-- PRIORITY -->
-                        <p><strong>Priority:</strong> <span class="priority"></span></p>
-
-                        <!-- Tags, autofill for the tasklist template , not changeble -->
-                        <p><strong>Tags:</strong> <span class="tags"></span></p>
-
-                        <!-- DESCRIPTION -->
-                        <div>
-                            <strong>Description:</strong>
-                            <p class="descriotion"></p>
+                    <div class="form-properties">
+                        <div class="field">
+                            <label for="title">Name:</label>
+                            <input type="text" id="title" name="title">
                         </div>
-
-                        <!-- ARCHIVED -->
-                        <input type="checkbox" id="archive" name="archive">
-
-                        <!-- ADD BUTTON -->
-                        <div>
-                        <button class="add">Add</button>
+                        <div class="field">
+                            <label for="deadline">Deadline:</label>
+                            <input type="date" id="deadline" name="deadline">
+                        </div>
+                        <div class="field">
+                            <label for="status">Status:</label>
+                            <select id="status" name="status">
+                                <option value="to-do">To-do</option>
+                                <option value="doing">Doing</option>
+                                <option value="review">Review</option>
+                                <option value="done">Done</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="assigned">Assigned:</label>
+                            <input type="text" id="assigned" name="assigned">
+                        </div>
+                        <div class="field">
+                            <label for="archive">Archive:</label>
+                            <input type="checkbox" id="archive" name="archive">
                         </div>
                     </div>
-                </template>
+                    <textarea id="notes" name="notes" rows="8" placeholder="Document progress, problems, solutions..."></textarea>
+                    <button class="addTask">Add Task</button>
+                </form>
+
+                <!-- CRITICAL TASKS -->
+                <div class="critical-tasks">
+                    <h3>Critical tasks</h3>
+                    <ul id="criticalList"></ul>
+                </div>
             </div>
 
-            <!-- STATISTICS -->
-            <p id="numTaskCompleted">
-                Completed =
-            </p>
+            <div class="search-bar">
+                <label for="search">Search:</label>
+                <input type="search" id="search" placeholder="Search...">
+            </div>
 
-            <p id="numTaskInProgress">
-                In Progress =
-            </p>
+            <ul id="taskList">
+                <li>Task 1</li>
+                <li>Task 2</li>
+                <li>Task 3</li>
+            </ul>
 
-            <p id="numTotalTasks">
-                Total =
-            </p>
+            <template id="taskTemplate">
+                <!-- sin cambios -->
+            </template>
 
+            <p id="numTaskCompleted">Completed =</p>
+            <p id="numTaskInProgress">In Progress =</p>
+            <p id="numTotalTasks">Total =</p>
         </main>
 
     </div>
+
     <footer>
 
     </footer>

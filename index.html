@@ -4,20 +4,23 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>TaskFlow</title>
+        <script src="https://cdn.tailwindcss.com"></script>
         <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
     <header>
         <h1>Task Manager</h1>
+        <button id="darkToggle" onclick="toggleDark()" aria-label="Toggle dark mode">🌙 Dark mode</button>
     </header>
 
     <div class="app-wrapper">
 
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <!-- NAME + LOGO -->
             <div class="logo">
                 <h2>App</h2>
+                <button onclick="toggleSidebar()" aria-label="Toggle sidebar" id="sidebarToggle">←</button>
             </div>
 
             <!-- PROJECTS / LISTS -->
@@ -30,9 +33,6 @@
                 </ul>
             </nav>
 
-            <div class="user">
-                <p>👤 User</p>
-            </div>
         </aside>
 
         <main>

@@ -46,6 +46,7 @@ body {
 .app-wrapper {
     display: flex;
     flex: 1;
+    min-height: 100vh;
 }
 
 main {
@@ -55,31 +56,47 @@ main {
 }
 
 /*HEADER*/
-header h1 {
-    padding: var(--spacing-md);
-    font-size: 1.2rem;
-    color: var(--color-text-muted);
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px var(--spacing-md);
     border-bottom: 1px solid var(--color-border);
+}
+
+header h1 {
+    font-size: 1rem;
+    color: var(--color-text-muted);
+    padding: 0;
+    border: none;
 }
 
 main header h2 {
     font-size: 1.4rem;
     margin-bottom: var(--spacing-md);
+    border: none;
+    padding: 0;
 }
 
 /*SIDEBAR*/
 .sidebar {
     width: 200px;
-    min-height: 100vh;
+    height: 100vh;
+    position: sticky;
+    top: 0;
     background-color: var(--color-sidebar);
     border-right: 1px solid var(--color-border);
     padding: var(--spacing-md);
     display: flex;
     flex-direction: column;
     gap: var(--spacing-md);
+    overflow-y: auto;
 }
 
 .sidebar .logo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     padding-bottom: var(--spacing-sm);
     border-bottom: 1px solid var(--color-border);
 }
@@ -119,10 +136,15 @@ main header h2 {
     background: var(--color-border);
 }
 
-.sidebar .user {
-    padding-top: var(--spacing-sm);
-    border-top: 1px solid var(--color-border);
-    font-size: 0.9rem;
+.sidebar.collapsed {
+    width: 48px;
+    overflow: hidden;
+}
+
+.sidebar.collapsed .projects,
+.sidebar.collapsed .user,
+.sidebar.collapsed h2 {
+    display: none;
 }
 
 /*MAIN TOP (form + critical tasks)*/
@@ -172,6 +194,12 @@ button.addTask {
     justify-self: end;
     width: auto;
     padding: 6px 20px;
+    background: var(--color-accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 14px;
 }
 
 /*INPUTS*/
@@ -207,6 +235,30 @@ button:hover {
     opacity: 0.85;
 }
 
+/*FILTERS*/
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: var(--spacing-md);
+}
+
+.filter-btn {
+    padding: 4px 12px;
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--color-text);
+}
+
+.filter-btn.active {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: white;
+}
+
 /*TASK LIST*/
 ul {
     list-style: none;
@@ -230,4 +282,72 @@ li {
     font-size: 14px;
     color: var(--color-text-muted);
     margin-top: var(--spacing-sm);
+}
+
+/*DARK MODE*/
+.dark body {
+    --color-bg: #1a1a18;
+    --color-sidebar: #242422;
+    --color-card: #2c2c2a;
+    --color-border: #3a3a38;
+    --color-text: #f0efe9;
+    --color-text-muted: #888780;
+}
+
+/* ===========================
+    RESPONSIVE
+=========================== */
+
+/*Tablet*/
+@media (max-width: 768px) {
+    .app-wrapper {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .sidebar .projects {
+        display: none;
+    }
+
+    .main-top {
+        grid-template-columns: 1fr;
+    }
+
+    form {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+    }
+
+    button.addTask {
+        grid-column: 1;
+        width: 100%;
+        justify-self: stretch;
+    }
+}
+
+/*Mobile*/
+@media (max-width: 480px) {
+    main {
+        padding: var(--spacing-md);
+    }
+
+    .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    #numTaskCompleted,
+    #numTaskInProgress,
+    #numTotalTasks {
+        display: block;
+    }
 }

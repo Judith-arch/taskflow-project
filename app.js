@@ -140,3 +140,25 @@ function toggleComplete(id) {
     renderTasks();
     localStorage.setItem("tasks", JSON.stringify(tasks));
 }
+
+// Dark mode toggle
+function toggleDark() {
+    document.documentElement.classList.toggle('dark');
+    const isDark = document.documentElement.classList.contains('dark');
+    localStorage.setItem('darkMode', isDark);
+    document.getElementById('darkToggle').textContent = isDark ? '☀️ Light mode' : '🌙 Dark mode';
+}
+
+// Load dark mode preference
+if (localStorage.getItem('darkMode') === 'true') {
+    document.documentElement.classList.add('dark');
+    document.getElementById('darkToggle').textContent = '☀️ Light mode';
+}
+
+// Toggle sidebar
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const btn = document.getElementById('sidebarToggle');
+    sidebar.classList.toggle('collapsed');
+    btn.textContent = sidebar.classList.contains('collapsed') ? '→' : '←';
+}

@@ -1,15 +1,37 @@
 // Array to store all tasks
 let tasks = [];
 
+let currentFilter = 'all';
+let currentSearch = '';
+
+// Filter tasks by status
+function filterTasks(filter) {
+    currentFilter = filter;
+
+    // Update active button style
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+
+    renderTasks();
+}
+
 // Render tasks in the DOM
 function renderTasks() {
     const taskList = document.getElementById("taskList");
-    
+
     // Clear the list before rendering
     taskList.innerHTML = "";
 
+    // Apply status filter and search filter
+    const filtered = (currentFilter === 'all'
+        ? tasks
+        : tasks.filter(t => t.status === currentFilter))
+        .filter(t => t.title.toLowerCase().includes(currentSearch));
+
     // Create a list item for each task
-    tasks.forEach(function(task) {
+    filtered.forEach(function(task) {
         const li = document.createElement("li");
         li.innerHTML = `
             <strong>${task.title}</strong>
@@ -44,7 +66,7 @@ document.getElementById("taskForm").addEventListener("submit", function(e) {
         completed: false,        // not completed by default
         status: status,          // To-do / Doing / Done
         assigned: assigned,      // person assigned
-        priority: "low",         // low / medium / high
+            
         notes: "",               // documentation area
         tags: [],                // categories
         archived: false          // not archived by default
@@ -93,9 +115,28 @@ function updateStats() {
     document.getElementById("numTaskInProgress").textContent = "In Progress = " + inProgress;
 }
 
+// Search tasks by title
+document.getElementById("search").addEventListener("input", function() {
+    currentSearch = this.value.toLowerCase();
+    renderTasks();
+});
+
 // Load tasks from LocalStorage on startup
 const savedTasks = localStorage.getItem("tasks");
 if (savedTasks) {
     tasks = JSON.parse(savedTasks);
     renderTasks();
+}
+
+// Mark a task as completed or not
+function toggleComplete(id) {
+    tasks = tasks.map(function(task) {
+        if (task.id === id) {
+            task.completed = !task.completed;
+            task.status = task.completed ? 'done' : 'to-do';
+        }
+        return task;
+    });
+    renderTasks();
+    localStorage.setItem("tasks", JSON.stringify(tasks));
 }

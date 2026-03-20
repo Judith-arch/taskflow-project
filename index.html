@@ -86,6 +86,15 @@
                 <input type="search" id="search" placeholder="Search...">
             </div>
 
+            <div class="filters">
+                <button onclick="filterTasks('all')" class="filter-btn active">All</button>
+                <button onclick="filterTasks('to-do')" class="filter-btn">To-do</button>
+                <button onclick="filterTasks('doing')" class="filter-btn">Doing</button>
+                <button onclick="filterTasks('review')" class="filter-btn">Review</button>
+                <button onclick="filterTasks('done')" class="filter-btn">Done</button>
+                <button onclick="filterTasks('cancelled')" class="filter-btn">Cancelled</button>
+            </div>
+
             <ul id="taskList">
                 <li>Task 1</li>
                 <li>Task 2</li>

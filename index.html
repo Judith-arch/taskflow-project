@@ -12,125 +12,128 @@
         <h1>Task Manager</h1>
     </header>
 
-    <aside class="sidebar">
-        <!-- NAME + LOGO -->
-        <div class="logo">
-            <h2>App</h2>
-        </div>
+    <div class="app-wrapper">
 
-        <!-- PROJECTS / LISTS -->
-        <nav class="projects">
-            <h3>projects</h3>
-            <ul>
-                <li>Project 1</li>
-                <li>Project 2</li>
-                <li>Project 3</li>
-            </ul>
-        </nav>
+        <aside class="sidebar">
+            <!-- NAME + LOGO -->
+            <div class="logo">
+                <h2>App</h2>
+            </div>
 
-        <div class="user">
-            <p>👤 User</p>
-        </div>
-    </aside>
+            <!-- PROJECTS / LISTS -->
+            <nav class="projects">
+                <h3>projects</h3>
+                <ul>
+                    <li>Project 1</li>
+                    <li>Project 2</li>
+                    <li>Project 3</li>
+                </ul>
+            </nav>
 
-    <main>
-        <!-- NAME of the project of the layout tasks -->
-        <header>
-            <h2>Project Name</h2>
-        </header>
+            <div class="user">
+                <p>👤 User</p>
+            </div>
+        </aside>
 
-        <div>
-            <label>
-                SearchBar:
-                <input type="search" placeholder="Search...">
-            </label>
-            <form id="taskForm">
-                <!-- Task TITLE -->
-                <label for="title">Name:</label>
-                <input type="text" id="title" name="title">
+        <main>
+            <!-- NAME of the project of the layout tasks -->
+            <header>
+                <h2>Project Name</h2>
+            </header>
 
-                <!-- Task DEADLINE -->
-                <label for="deadline">Deadline:</label>
-                <input type="date" id="deadline" name="deadline">
+            <div>
+                <label>
+                    SearchBar:
+                    <input type="search" placeholder="Search...">
+                </label>
+                <form id="taskForm">
+                    <!-- Task TITLE -->
+                    <label for="title">Name:</label>
+                    <input type="text" id="title" name="title">
 
-                <!-- Task STATUS -->
-                <label for="status">Status:</label>
-                <input type="text" id="status" name="status">
+                    <!-- Task DEADLINE -->
+                    <label for="deadline">Deadline:</label>
+                    <input type="date" id="deadline" name="deadline">
 
-                <!-- Task ASSIGNED -->
-                <label for="assigned">Assigned:</label>
-                <input type="text" id="assigned" name="assigned">
+                    <!-- Task STATUS -->
+                    <label for="status">Status:</label>
+                    <input type="text" id="status" name="status">
 
-                <!-- Task ARCHIVE -->
-                <label for="archive">Archive:</label>
-                <input type="checkbox" id="archive" name="archive">
+                    <!-- Task ASSIGNED -->
+                    <label for="assigned">Assigned:</label>
+                    <input type="text" id="assigned" name="assigned">
 
-                <!-- ADD Task -->
-                <button class="addTask">Add Task</button>
-
-            </form>
-
-            <ul>
-                <li>Task 1</li>
-                <li>Task 2</li>
-                <li>Task 3</li>
-            </ul>
-
-            <template id="taskTemplate">
-                <div class="task">
-                    <!-- TITLE -->
-                    <h2 class="title">Task title</h2>
-
-                    <!-- DEADLINE -->
-                    <p><strong>Deadline:</strong> <span class="deadline"> </span></p>
-
-                    <!-- STATUS -->
-                    <p>
-                        <strong>Status:</strong>
-                        <span class="status"></span>
-                    </p>
-
-                    <!-- ASSIGNED -->
-                    <p><strong>Assigned:</strong> <span class="assigned"></span></p>
-
-                    <!-- PRIORITY -->
-                    <p><strong>Priority:</strong> <span class="priority"></span></p>
-
-                    <!-- Tags, autofill for the tasklist template , not changeble -->
-                    <p><strong>Tags:</strong> <span class="tags"></span></p>
-
-                    <!-- DESCRIPTION -->
-                    <div>
-                        <strong>Description:</strong>
-                        <p class="descriotion"></p>
-                    </div>
-
-                    <!-- ARCHIVED -->
+                    <!-- Task ARCHIVE -->
+                    <label for="archive">Archive:</label>
                     <input type="checkbox" id="archive" name="archive">
 
-                    <!-- ADD BUTTON -->
-                    <div>
-                    <button class="add">Add</button>
+                    <!-- ADD Task -->
+                    <button class="addTask">Add Task</button>
+
+                </form>
+
+                <ul>
+                    <li>Task 1</li>
+                    <li>Task 2</li>
+                    <li>Task 3</li>
+                </ul>
+
+                <template id="taskTemplate">
+                    <div class="task">
+                        <!-- TITLE -->
+                        <h2 class="title">Task title</h2>
+
+                        <!-- DEADLINE -->
+                        <p><strong>Deadline:</strong> <span class="deadline"> </span></p>
+
+                        <!-- STATUS -->
+                        <p>
+                            <strong>Status:</strong>
+                            <span class="status"></span>
+                        </p>
+
+                        <!-- ASSIGNED -->
+                        <p><strong>Assigned:</strong> <span class="assigned"></span></p>
+
+                        <!-- PRIORITY -->
+                        <p><strong>Priority:</strong> <span class="priority"></span></p>
+
+                        <!-- Tags, autofill for the tasklist template , not changeble -->
+                        <p><strong>Tags:</strong> <span class="tags"></span></p>
+
+                        <!-- DESCRIPTION -->
+                        <div>
+                            <strong>Description:</strong>
+                            <p class="descriotion"></p>
+                        </div>
+
+                        <!-- ARCHIVED -->
+                        <input type="checkbox" id="archive" name="archive">
+
+                        <!-- ADD BUTTON -->
+                        <div>
+                        <button class="add">Add</button>
+                        </div>
                     </div>
-                </div>
-            </template>
-        </div>
+                </template>
+            </div>
 
-        <!-- STATISTICS -->
-        <p id="numTaskCompleted">
-            Completed =
-        </p>
+            <!-- STATISTICS -->
+            <p id="numTaskCompleted">
+                Completed =
+            </p>
 
-        <p id="numTaskInProgress">
-            In Progress =
-        </p>
+            <p id="numTaskInProgress">
+                In Progress =
+            </p>
 
-        <p id="numTotalTasks">
-            Total =
-        </p>
+            <p id="numTotalTasks">
+                Total =
+            </p>
 
-    </main>
+        </main>
 
+    </div>
     <footer>
 
     </footer>

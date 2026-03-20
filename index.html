@@ -35,86 +35,101 @@
 
         </aside>
 
-        <main>
-            <header>
-                <h2>Project Name</h2>
-            </header>
+    <main>
+        <header>
+            <h2>Project Name</h2>
+        </header>
 
-            <div class="main-top">
-                <form id="taskForm">
-                    <div class="form-properties">
-                        <div class="field">
-                            <label for="title">Name:</label>
-                            <input type="text" id="title" name="title">
-                        </div>
-                        <div class="field">
-                            <label for="deadline">Deadline:</label>
-                            <input type="date" id="deadline" name="deadline">
-                        </div>
-                        <div class="field">
-                            <label for="status">Status:</label>
-                            <select id="status" name="status">
-                                <option value="to-do">To-do</option>
-                                <option value="doing">Doing</option>
-                                <option value="review">Review</option>
-                                <option value="done">Done</option>
-                                <option value="cancelled">Cancelled</option>
-                            </select>
-                        </div>
-                        <div class="field">
-                            <label for="assigned">Assigned:</label>
-                            <input type="text" id="assigned" name="assigned">
-                        </div>
-                        <div class="field">
-                            <label for="archive">Archive:</label>
-                            <input type="checkbox" id="archive" name="archive">
-                        </div>
+        <!-- TOP: form + task list side by side -->
+        <div class="main-top">
+            <form id="taskForm">
+                <div class="form-properties">
+                    <div class="field">
+                        <label for="title">New Task:</label>
+                        <input type="text" id="title" name="title">
                     </div>
-                    <textarea id="notes" name="notes" rows="8" placeholder="Document progress, problems, solutions..."></textarea>
-                    <button class="addTask">Add Task</button>
-                </form>
-
-                <!-- CRITICAL TASKS -->
-                <div class="critical-tasks">
-                    <h3>Critical tasks</h3>
-                    <ul id="criticalList"></ul>
+                    <div class="field">
+                        <label for="deadline">Deadline:</label>
+                        <input type="date" id="deadline" name="deadline">
+                    </div>
+                    <div class="field">
+                        <label for="status">Status:</label>
+                        <select id="status" name="status">
+                            <option value="to-do">To-do</option>
+                            <option value="doing">Doing</option>
+                            <option value="review">Review</option>
+                            <option value="done">Done</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="assigned">Assigned:</label>
+                        <input type="text" id="assigned" name="assigned">
+                    </div>
+                    <div class="field">
+                        <label for="priority">Priority:</label>
+                        <select id="priority" name="priority">
+                            <option value="1">⭐ Low</option>
+                            <option value="2">⭐⭐ Medium</option>
+                            <option value="3">⭐⭐⭐ High</option>
+                        </select>
+                    </div>
                 </div>
+                <button class="addTask">Add Task</button>
+            </form>
+
+            <!-- TASK LIST -->
+            <div class="task-list-section">
+                <div class="search-bar">
+                    <input type="search" id="search" placeholder="Search...">
+                </div>
+                <div class="filters">
+                    <button onclick="filterTasks('all')" class="filter-btn active">All</button>
+                    <button onclick="filterTasks('to-do')" class="filter-btn">To-do</button>
+                    <button onclick="filterTasks('doing')" class="filter-btn">Doing</button>
+                    <button onclick="filterTasks('review')" class="filter-btn">Review</button>
+                    <button onclick="filterTasks('done')" class="filter-btn">Done</button>
+                    <button onclick="filterTasks('cancelled')" class="filter-btn">Cancelled</button>
+                </div>
+                <ul id="taskList"></ul>
+            </div>
+        </div>
+
+        <!-- MIDDLE: statistics -->
+        <div class="stats-section">
+            <div class="stats-numbers">
+                <span id="numTaskTodo">To-do: 0</span>
+                <span id="numTaskInProgress">In Progress: 0</span>
+                <span id="numTaskCompleted">Completed: 0</span>
+                <span id="numTotalTasks">Total: 0</span>
+            </div>
+            <div class="progress-bar-wrapper">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <p id="progressLabel">0% completed</p>
+        </div>
+
+        <!-- BOTTOM: critical tasks + calendar -->
+        <div class="bottom-section">
+            <div class="critical-tasks">
+                <h3>Critical tasks</h3>
+                <ul id="criticalList"></ul>
             </div>
 
-            <div class="search-bar">
-                <label for="search">Search:</label>
-                <input type="search" id="search" placeholder="Search...">
+            <div class="calendar-placeholder">
+                <h3>Calendar</h3>
+                <div id="calendarBody"></div>
             </div>
 
-            <div class="filters">
-                <button onclick="filterTasks('all')" class="filter-btn active">All</button>
-                <button onclick="filterTasks('to-do')" class="filter-btn">To-do</button>
-                <button onclick="filterTasks('doing')" class="filter-btn">Doing</button>
-                <button onclick="filterTasks('review')" class="filter-btn">Review</button>
-                <button onclick="filterTasks('done')" class="filter-btn">Done</button>
-                <button onclick="filterTasks('cancelled')" class="filter-btn">Cancelled</button>
-            </div>
+        </div>
 
-            <ul id="taskList">
-                <li>Task 1</li>
-                <li>Task 2</li>
-                <li>Task 3</li>
-            </ul>
-
-            <template id="taskTemplate">
-                <!-- sin cambios -->
-            </template>
-
-            <p id="numTaskCompleted">Completed =</p>
-            <p id="numTaskInProgress">In Progress =</p>
-            <p id="numTotalTasks">Total =</p>
-        </main>
+    </main>
 
     </div>
 
-    <footer>
-
-    </footer>
+<footer>
+    <p>TaskFlow © 2026 — Made by Lirim · <a href="https://github.com/tu-usuario/bootcamp-project" target="_blank">GitHub</a></p>
+</footer>
 
     <script src="app.js"></script>
 </body>

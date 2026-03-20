@@ -150,19 +150,65 @@ main header h2 {
 /*MAIN TOP (form + critical tasks)*/
 .main-top {
     display: grid;
-    grid-template-columns: 1fr 280px;
+    grid-template-columns: 320px 1fr;
     gap: var(--spacing-md);
     margin-bottom: var(--spacing-lg);
+    align-items: start;
+}
+
+/*TASK LIST SECTION*/
+.task-list-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+#taskList {
+    overflow-y: auto;
+    max-height: 50vh;
+}
+
+/*BOTTOM - critical + calendar*/
+.bottom-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+}
+
+.critical-tasks h3,
+.calendar-placeholder h3 {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-sm);
+}
+
+.calendar-placeholder {
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: var(--spacing-md);
+}
+
+.calendar-body {
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    font-size: 13px;
 }
 
 /*FORM*/
 form {
     display: grid;
     grid-template-columns: 220px 1fr;
-    grid-template-rows: 1fr auto;
+    grid-template-rows: auto auto;
     gap: var(--spacing-md);
     background: var(--color-card);
-    padding: var(--spacing-lg);
+    padding: var(--spacing-md);
     border-radius: var(--radius);
     border: 1px solid var(--color-border);
 }
@@ -181,16 +227,18 @@ form {
 
 textarea {
     padding: 8px 12px;
-    font-size: 16px;
+    font-size: 14px;
     border: 1px solid var(--color-border);
     border-radius: var(--radius);
     background: var(--color-bg);
     resize: vertical;
     font-family: var(--font-base);
+    min-height: 120px;
+    max-height: 200px;
 }
 
 button.addTask {
-    grid-column: 2;
+    grid-column: 1 / -1;
     justify-self: end;
     width: auto;
     padding: 6px 20px;
@@ -200,6 +248,7 @@ button.addTask {
     border-radius: var(--radius);
     cursor: pointer;
     font-size: 14px;
+    margin-top: var(--spacing-sm);
 }
 
 /*INPUTS*/
@@ -233,6 +282,18 @@ button {
 
 button:hover {
     opacity: 0.85;
+}
+
+/*SEARCH BAR*/
+.search-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin: var(--spacing-md) 0 var(--spacing-sm) 0;
+}
+
+.search-bar input {
+    flex: 1;
 }
 
 /*FILTERS*/
@@ -273,15 +334,144 @@ li {
     border-radius: var(--radius);
     border: 1px solid var(--color-border);
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+}
+
+/*TASK CARD LAYOUT*/
+.task-main {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+    flex: 1;
+}
+
+.task-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.task-top {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.task-date {
+    font-size: 13px;
+    color: var(--color-text-muted);
+}
+
+.task-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.task-bottom {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-top: 2px;
+}
+
+.task-stars {
+    font-size: 12px;
+}
+
+.task-assigned {
+    font-size: 13px;
+    color: var(--color-text-muted);
+}
+
+.task-cancel {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    opacity: 0.4;
+    font-size: 14px;
+}
+
+.task-cancel:hover {
+    opacity: 1;
+    background: none;
+}
+
+details summary {
+    font-size: 13px;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    margin-top: 4px;
+}
+
+details p {
+    font-size: 13px;
+    color: var(--color-text-muted);
+    margin-top: 4px;
+    padding-left: var(--spacing-sm);
 }
 
 /*STATISTICS*/
-#numTaskCompleted,
-#numTaskInProgress,
-#numTotalTasks {
+.stats-section {
+    margin-top: var(--spacing-lg);
+    padding: var(--spacing-md);
+    background: var(--color-card);
+    border-radius: var(--radius);
+    border: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.stats-numbers {
+    display: flex;
+    gap: var(--spacing-md);
     font-size: 14px;
     color: var(--color-text-muted);
-    margin-top: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+.progress-bar-wrapper {
+    height: 8px;
+    background: var(--color-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: var(--color-accent);
+    border-radius: var(--radius);
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+#progressLabel {
+    font-size: 13px;
+    color: var(--color-text-muted);
+}
+
+/*FOOTER*/
+footer {
+    text-align: center;
+    padding: var(--spacing-md);
+    font-size: 13px;
+    color: var(--color-text-muted);
+    border-top: 1px solid var(--color-border);
+}
+
+footer a {
+    color: var(--color-accent);
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
 }
 
 /*DARK MODE*/
@@ -295,7 +485,7 @@ li {
 }
 
 /* ===========================
-    RESPONSIVE
+   RESPONSIVE
 =========================== */
 
 /*Tablet*/
@@ -344,10 +534,76 @@ li {
         flex-wrap: wrap;
         gap: 4px;
     }
+}
 
-    #numTaskCompleted,
-    #numTaskInProgress,
-    #numTotalTasks {
-        display: block;
-    }
+/* Bigger task checkboxes */
+.task-main input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-top: 3px;
+}
+
+/* Bigger cancel button */
+.task-cancel {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    opacity: 0.4;
+    font-size: 18px;
+}
+
+/* CALENDAR */
+.cal-month {
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: var(--spacing-sm);
+    color: var(--color-text);
+}
+
+.cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+.cal-day-name {
+    font-size: 11px;
+    color: var(--color-text-muted);
+    text-align: center;
+    padding: 2px 0;
+}
+
+.cal-day {
+    font-size: 12px;
+    text-align: center;
+    padding: 4px 2px;
+    border-radius: 4px;
+    position: relative;
+}
+
+.cal-day.today {
+    background: var(--color-accent);
+    color: white;
+    font-weight: 500;
+}
+
+.cal-day.has-task::after {
+    content: '';
+    display: block;
+    width: 4px;
+    height: 4px;
+    background: var(--color-accent);
+    border-radius: 50%;
+    margin: 1px auto 0;
+}
+
+.cal-day.today.has-task::after {
+    background: white;
+}
+
+.cal-day.empty {
+    background: none;
 }

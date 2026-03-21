@@ -3,6 +3,7 @@ let tasks = [];
 
 let currentFilter = 'all';
 let currentSearch = '';
+let sortAscending = true;
 
 // Filter tasks by status
 function filterTasks(filter) {
@@ -19,12 +20,9 @@ function renderTasks() {
     const taskList = document.getElementById("taskList");
     taskList.innerHTML = "";
 
-    const filtered = (currentFilter === 'all'
-        ? tasks
-        : tasks.filter(t => t.status === currentFilter))
-        .filter(t => t.title.toLowerCase().includes(currentSearch));
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    // Status colors
     const statusColors = {
         'to-do': '#888780',
         'doing': '#3b82f6',
@@ -33,11 +31,48 @@ function renderTasks() {
         'cancelled': '#ef4444'
     };
 
+    const statusBg = {
+        'to-do': 'var(--color-todo)',
+        'doing': 'var(--color-doing)',
+        'review': 'var(--color-review)',
+        'done': 'var(--color-done)',
+        'cancelled': 'var(--color-cancelled)'
+    };
+
+    let filtered = tasks.filter(t => {
+        if (currentFilter === 'archived') {
+            return t.status === 'done' || t.status === 'cancelled';
+        }
+        if (currentFilter === 'all') {
+            return t.status !== 'done' && t.status !== 'cancelled';
+        }
+        if (currentFilter === 'done' || currentFilter === 'cancelled') {
+            return false; // never show in these filters, only in archived
+        }
+        return t.status === currentFilter;
+    })
+    .filter(t => t.title.toLowerCase().includes(currentSearch));
+
+    // Sort by deadline
+    filtered.sort((a, b) => {
+        const da = new Date(a.deadline);
+        const db = new Date(b.deadline);
+        return sortAscending ? da - db : db - da;
+    });
+
     filtered.forEach(function(task) {
         const li = document.createElement("li");
         const color = statusColors[task.status] || '#888780';
         const stars = '⭐'.repeat(task.priority || 1);
 
+        li.style.backgroundColor = statusBg[task.status] || 'var(--color-card)';
+        li.classList.add(`status-${task.status}`);
+
+        if (currentFilter === 'archived') {
+            li.style.backgroundColor = 'var(--color-sidebar)';
+            li.style.opacity = '0.7';
+            li.querySelector('strong')
+        }
         li.innerHTML = `
             <div class="task-main">
                 <input type="checkbox" onchange="toggleComplete(${task.id})" ${task.completed ? "checked" : ""}>
@@ -109,6 +144,8 @@ document.getElementById("taskForm").addEventListener("submit", function(e) {
     };
 
     tasks.push(task);
+    // Reset form after adding task
+    document.getElementById("taskForm").reset();
     renderTasks();
     localStorage.setItem("tasks", JSON.stringify(tasks));
     console.log("Task added:", tasks);
@@ -161,10 +198,14 @@ function updateStats() {
     const todo = tasks.filter(t => t.status === 'to-do').length;
     const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
 
-    document.getElementById("numTotalTasks").textContent = "Total: " + total;
-    document.getElementById("numTaskCompleted").textContent = "Completed: " + completed;
-    document.getElementById("numTaskInProgress").textContent = "In Progress: " + inProgress;
-    document.getElementById("numTaskTodo").textContent = "To-do: " + todo;
+    document.getElementById("numTotalTasks").textContent = "Total";
+    document.getElementById("numTotalTasks").setAttribute("data-value", total);
+    document.getElementById("numTaskCompleted").textContent = "Completed";
+    document.getElementById("numTaskCompleted").setAttribute("data-value", completed);
+    document.getElementById("numTaskInProgress").textContent = "In Progress";
+    document.getElementById("numTaskInProgress").setAttribute("data-value", inProgress);
+    document.getElementById("numTaskTodo").textContent = "To-do";
+    document.getElementById("numTaskTodo").setAttribute("data-value", todo);
     document.getElementById("progressBar").style.width = percentage + "%";
     document.getElementById("progressLabel").textContent = percentage + "% completed";
 }
@@ -175,12 +216,16 @@ function updateCriticalTasks() {
     criticalList.innerHTML = "";
 
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const in5days = new Date();
     in5days.setDate(today.getDate() + 5);
 
     const critical = tasks.filter(t => {
         const deadline = new Date(t.deadline);
-        return deadline >= today && deadline <= in5days && !t.completed;
+        return !t.completed &&
+                t.status !== 'cancelled' &&
+                t.status !== 'done' &&
+                ((deadline >= today && deadline <= in5days) || deadline < today);
     });
 
     if (critical.length === 0) {
@@ -190,8 +235,14 @@ function updateCriticalTasks() {
 
     critical.forEach(t => {
         const li = document.createElement("li");
-        li.textContent = `${t.title} — ${t.deadline}`;
+        if (currentFilter === 'archived') {
+            li.classList.add('archived-task');
+        }
+        const deadline = new Date(t.deadline);
+        const isOverdue = deadline < today;
+        li.textContent = `${isOverdue ? '⚠️' : '🔔'} ${t.title} — ${t.deadline}`;
         li.style.fontSize = "13px";
+        li.style.color = isOverdue ? '#ef4444' : '#f59e0b';
         criticalList.appendChild(li);
     });
 }
@@ -265,8 +316,8 @@ function toggleDark() {
     document.getElementById('darkToggle').textContent = isDark ? '☀️ Light mode' : '🌙 Dark mode';
 }
 
-// Load dark mode preference
-if (localStorage.getItem('darkMode') === 'true') {
+// Load dark mode preference — default is dark
+if (localStorage.getItem('darkMode') !== 'false') {
     document.documentElement.classList.add('dark');
     document.getElementById('darkToggle').textContent = '☀️ Light mode';
 }
@@ -277,4 +328,23 @@ function toggleSidebar() {
     const btn = document.getElementById('sidebarToggle');
     sidebar.classList.toggle('collapsed');
     btn.textContent = sidebar.classList.contains('collapsed') ? '→' : '←';
+}
+
+// Ascendin / Descending sort
+function toggleSort() {
+    sortAscending = !sortAscending;
+    document.getElementById('sortBtn').textContent = sortAscending ? '↑↓' : '↓↑';
+    renderTasks();
+}
+
+function cancelTask(id) {
+    tasks = tasks.map(function(task) {
+        if (task.id === id) {
+            task.status = 'cancelled';
+            task.completed = false;
+        }
+        return task;
+    });
+    renderTasks();
+    localStorage.setItem("tasks", JSON.stringify(tasks));
 }

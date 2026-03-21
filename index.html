@@ -90,6 +90,9 @@
                     <button onclick="filterTasks('review')" class="filter-btn">Review</button>
                     <button onclick="filterTasks('done')" class="filter-btn">Done</button>
                     <button onclick="filterTasks('cancelled')" class="filter-btn">Cancelled</button>
+                    <button onclick="filterTasks('archived')" class="filter-btn">Archived</button>
+                    <button onclick="toggleSort()" id="sortBtn" class="filter-btn" aria-label="Toggle sort order">↑↓</button>
+
                 </div>
                 <ul id="taskList"></ul>
             </div>
@@ -122,6 +125,42 @@
             </div>
 
         </div>
+
+        <section class="how-it-works">
+            <h3>How TaskFlow works</h3>
+            <div class="how-grid">
+                <div class="how-item">
+                    <span class="how-icon">✏️</span>
+                    <strong>Create</strong>
+                    <p>Fill the form with title, deadline, status, assigned person and priority. All fields required.</p>
+                </div>
+                <div class="how-item">
+                    <span class="how-icon">🔍</span>
+                    <strong>Filter & Search</strong>
+                    <p>Use status filters and the search bar to find tasks. Sort by date ascending or descending.</p>
+                </div>
+                <div class="how-item">
+                    <span class="how-icon">🔄</span>
+                    <strong>Track progress</strong>
+                    <p>Change status inline from each task card. The progress bar and stats update automatically.</p>
+                </div>
+                <div class="how-item">
+                    <span class="how-icon">📦</span>
+                    <strong>Archive</strong>
+                    <p>Marking done (checkbox) or cancelled (trash) moves the task to Archived automatically.</p>
+                </div>
+                <div class="how-item">
+                    <span class="how-icon">⚠️</span>
+                    <strong>Critical tasks</strong>
+                    <p>Tasks due within 5 days or overdue appear in the critical panel in orange or red.</p>
+                </div>
+                <div class="how-item">
+                    <span class="how-icon">📅</span>
+                    <strong>Calendar</strong>
+                    <p>Orange dots mark days with pending task deadlines for the current month.</p>
+                </div>
+            </div>
+        </section>
 
     </main>
 

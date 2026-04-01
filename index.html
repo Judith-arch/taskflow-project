@@ -1,174 +1,212 @@
 <!DOCTYPE html>
 <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>TaskFlow</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <link rel="stylesheet" href="style.css">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
     <header>
-        <h1>Task Manager</h1>
-        <button id="darkToggle" onclick="toggleDark()" aria-label="Toggle dark mode">🌙 Dark mode</button>
+        <h1>TaskFlow</h1>
+        <button id="darkToggle" onclick="toggleDark()" aria-label="Toggle dark mode">☀️ Light mode</button>
     </header>
 
     <div class="app-wrapper">
 
         <aside class="sidebar" id="sidebar">
-            <!-- NAME + LOGO -->
             <div class="logo">
-                <h2>App</h2>
+                <div class="app-badge">
+                    <div class="logo-dot"></div>
+                    <h2>TaskFlow</h2>
+                </div>
                 <button onclick="toggleSidebar()" aria-label="Toggle sidebar" id="sidebarToggle">←</button>
             </div>
 
-            <!-- PROJECTS / LISTS -->
             <nav class="projects">
-                <h3>projects</h3>
+                <h3>Projects</h3>
                 <ul>
                     <li>Project 1</li>
                     <li>Project 2</li>
                     <li>Project 3</li>
                 </ul>
             </nav>
-
         </aside>
 
-    <main>
-        <header>
-            <h2>Project Name</h2>
-        </header>
+        <main>
+            <header>
+                <h2>Project Name</h2>
+            </header>
 
-        <!-- TOP: form + task list side by side -->
-        <div class="main-top">
-            <form id="taskForm">
-                <div class="form-properties">
-                    <div class="field">
-                        <label for="title">New Task:</label>
-                        <input type="text" id="title" name="title">
+            <!-- TOP: form + task list -->
+            <div class="main-top">
+                <form id="taskForm">
+                    <div class="form-properties">
+                        <div class="field">
+                            <label for="title">New Task</label>
+                            <input type="text" id="title" name="title" placeholder="Task name…">
+                        </div>
+                        <div class="field">
+                            <label for="deadline">Deadline</label>
+                            <input type="date" id="deadline" name="deadline">
+                        </div>
+                        <div class="field">
+                            <label for="status">Status</label>
+                            <select id="status" name="status">
+                                <option value="to-do">To-do</option>
+                                <option value="doing">Doing</option>
+                                <option value="review">Review</option>
+                                <option value="done">Done</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="assigned">Assigned</label>
+                            <input type="text" id="assigned" name="assigned" placeholder="Who's on it…">
+                        </div>
+                        <div class="field">
+                            <label for="priority">Priority</label>
+                            <select id="priority" name="priority">
+                                <option value="1">⭐ Low</option>
+                                <option value="2">⭐⭐ Medium</option>
+                                <option value="3">⭐⭐⭐ High</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="field">
-                        <label for="deadline">Deadline:</label>
-                        <input type="date" id="deadline" name="deadline">
+                    <button class="addTask" type="submit">Add Task</button>
+                </form>
+
+                <!-- TASK LIST -->
+                <div class="task-list-section">
+                    <div class="search-bar">
+                        <input type="search" id="search" placeholder="Search tasks…">
                     </div>
-                    <div class="field">
-                        <label for="status">Status:</label>
-                        <select id="status" name="status">
-                            <option value="to-do">To-do</option>
-                            <option value="doing">Doing</option>
-                            <option value="review">Review</option>
-                            <option value="done">Done</option>
-                            <option value="cancelled">Cancelled</option>
-                        </select>
+                    <div class="filters">
+                        <button onclick="filterTasks('all')" class="filter-btn active">All</button>
+                        <button onclick="filterTasks('to-do')" class="filter-btn">To-do</button>
+                        <button onclick="filterTasks('doing')" class="filter-btn">Doing</button>
+                        <button onclick="filterTasks('review')" class="filter-btn">Review</button>
+                        <button onclick="filterTasks('done')" class="filter-btn">Done</button>
+                        <button onclick="filterTasks('cancelled')" class="filter-btn">Cancelled</button>
+                        <button onclick="filterTasks('archived')" class="filter-btn">Archived</button>
+                        <button onclick="toggleSort()" id="sortBtn" class="filter-btn" aria-label="Toggle sort order">↑↓</button>
                     </div>
-                    <div class="field">
-                        <label for="assigned">Assigned:</label>
-                        <input type="text" id="assigned" name="assigned">
+                    <ul id="taskList"></ul>
+                </div>
+            </div>
+
+            <!-- STATISTICS -->
+            <div class="stats-section">
+                <!-- Donut chart -->
+                <div class="donut-wrapper">
+                    <div class="donut-svg-container">
+                        <svg id="donutSvg" viewBox="0 0 160 160" width="160" height="160">
+                            <!-- bg track -->
+                            <circle id="donutTrack" cx="80" cy="80" r="60"
+                                fill="none" stroke-width="14" stroke-linecap="round"/>
+                            <!-- todo segment -->
+                            <circle id="donutTodo" cx="80" cy="80" r="60"
+                                fill="none" stroke="#f5a623" stroke-width="14" stroke-linecap="round"
+                                stroke-dasharray="0 377" style="transition: stroke-dasharray 0.6s cubic-bezier(.4,0,.2,1)"/>
+                            <!-- doing segment -->
+                            <circle id="donutDoing" cx="80" cy="80" r="60"
+                                fill="none" stroke="#3b82f6" stroke-width="14" stroke-linecap="round"
+                                stroke-dasharray="0 377" style="transition: stroke-dasharray 0.6s cubic-bezier(.4,0,.2,1), stroke-dashoffset 0.6s cubic-bezier(.4,0,.2,1)"/>
+                            <!-- done segment -->
+                            <circle id="donutDone" cx="80" cy="80" r="60"
+                                fill="none" stroke="#22c55e" stroke-width="14" stroke-linecap="round"
+                                stroke-dasharray="0 377" style="transition: stroke-dasharray 0.6s cubic-bezier(.4,0,.2,1), stroke-dashoffset 0.6s cubic-bezier(.4,0,.2,1)"/>
+                            <!-- cancelled segment -->
+                            <circle id="donutCancelled" cx="80" cy="80" r="60"
+                                fill="none" stroke="#ef4444" stroke-width="14" stroke-linecap="round"
+                                stroke-dasharray="0 377" style="transition: stroke-dasharray 0.6s cubic-bezier(.4,0,.2,1), stroke-dashoffset 0.6s cubic-bezier(.4,0,.2,1)"/>
+                        </svg>
+                        <div class="donut-center">
+                            <span class="donut-center-number" id="donutTotal">0</span>
+                            <span class="donut-center-label">Total</span>
+                        </div>
                     </div>
-                    <div class="field">
-                        <label for="priority">Priority:</label>
-                        <select id="priority" name="priority">
-                            <option value="1">⭐ Low</option>
-                            <option value="2">⭐⭐ Medium</option>
-                            <option value="3">⭐⭐⭐ High</option>
-                        </select>
+                    <div class="donut-legend">
+                        <div class="legend-item"><div class="legend-dot" style="background:#f5a623"></div>To-do</div>
+                        <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>Doing</div>
+                        <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Done</div>
+                        <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Cancelled</div>
                     </div>
                 </div>
-                <button class="addTask">Add Task</button>
-            </form>
 
-            <!-- TASK LIST -->
-            <div class="task-list-section">
-                <div class="search-bar">
-                    <input type="search" id="search" placeholder="Search...">
+                <!-- Stat cards -->
+                <div class="stats-right">
+                    <div class="stats-numbers">
+                        <span id="numTaskTodo" data-value="0">To-do</span>
+                        <span id="numTaskInProgress" data-value="0">In Progress</span>
+                        <span id="numTaskCompleted" data-value="0">Completed</span>
+                        <span id="numTotalTasks" data-value="0">Total</span>
+                    </div>
                 </div>
-                <div class="filters">
-                    <button onclick="filterTasks('all')" class="filter-btn active">All</button>
-                    <button onclick="filterTasks('to-do')" class="filter-btn">To-do</button>
-                    <button onclick="filterTasks('doing')" class="filter-btn">Doing</button>
-                    <button onclick="filterTasks('review')" class="filter-btn">Review</button>
-                    <button onclick="filterTasks('done')" class="filter-btn">Done</button>
-                    <button onclick="filterTasks('cancelled')" class="filter-btn">Cancelled</button>
-                    <button onclick="filterTasks('archived')" class="filter-btn">Archived</button>
-                    <button onclick="toggleSort()" id="sortBtn" class="filter-btn" aria-label="Toggle sort order">↑↓</button>
 
+                <!-- Hidden elements kept for JS compatibility -->
+                <div class="progress-bar-wrapper" style="display:none">
+                    <div class="progress-bar" id="progressBar"></div>
                 </div>
-                <ul id="taskList"></ul>
-            </div>
-        </div>
-
-        <!-- MIDDLE: statistics -->
-        <div class="stats-section">
-            <div class="stats-numbers">
-                <span id="numTaskTodo">To-do: 0</span>
-                <span id="numTaskInProgress">In Progress: 0</span>
-                <span id="numTaskCompleted">Completed: 0</span>
-                <span id="numTotalTasks">Total: 0</span>
-            </div>
-            <div class="progress-bar-wrapper">
-                <div class="progress-bar" id="progressBar"></div>
-            </div>
-            <p id="progressLabel">0% completed</p>
-        </div>
-
-        <!-- BOTTOM: critical tasks + calendar -->
-        <div class="bottom-section">
-            <div class="critical-tasks">
-                <h3>Critical tasks</h3>
-                <ul id="criticalList"></ul>
+                <p id="progressLabel" style="display:none">0% completed</p>
             </div>
 
-            <div class="calendar-placeholder">
-                <h3>Calendar</h3>
-                <div id="calendarBody"></div>
+            <!-- BOTTOM: critical tasks + calendar -->
+            <div class="bottom-section">
+                <div class="critical-tasks">
+                    <h3>Critical tasks</h3>
+                    <ul id="criticalList"></ul>
+                </div>
+
+                <div class="calendar-placeholder">
+                    <h3>Calendar</h3>
+                    <div id="calendarBody"></div>
+                </div>
             </div>
 
-        </div>
-
-        <section class="how-it-works">
-            <h3>How TaskFlow works</h3>
-            <div class="how-grid">
-                <div class="how-item">
-                    <span class="how-icon">✏️</span>
-                    <strong>Create</strong>
-                    <p>Fill the form with title, deadline, status, assigned person and priority. All fields required.</p>
+            <section class="how-it-works">
+                <h3>How TaskFlow works</h3>
+                <div class="how-grid">
+                    <div class="how-item">
+                        <span class="how-icon">✏️</span>
+                        <strong>Create</strong>
+                        <p>Fill the form with title, deadline, status, assigned person and priority.</p>
+                    </div>
+                    <div class="how-item">
+                        <span class="how-icon">🔍</span>
+                        <strong>Filter & Search</strong>
+                        <p>Use status filters and the search bar to find tasks. Sort by date.</p>
+                    </div>
+                    <div class="how-item">
+                        <span class="how-icon">🔄</span>
+                        <strong>Track progress</strong>
+                        <p>Change status inline. The progress bar and stats update automatically.</p>
+                    </div>
+                    <div class="how-item">
+                        <span class="how-icon">📦</span>
+                        <strong>Archive</strong>
+                        <p>Marking done or cancelled moves the task to Archived automatically.</p>
+                    </div>
+                    <div class="how-item">
+                        <span class="how-icon">⚠️</span>
+                        <strong>Critical tasks</strong>
+                        <p>Tasks due within 5 days or overdue appear in the critical panel.</p>
+                    </div>
+                    <div class="how-item">
+                        <span class="how-icon">📅</span>
+                        <strong>Calendar</strong>
+                        <p>Orange dots mark days with pending task deadlines this month.</p>
+                    </div>
                 </div>
-                <div class="how-item">
-                    <span class="how-icon">🔍</span>
-                    <strong>Filter & Search</strong>
-                    <p>Use status filters and the search bar to find tasks. Sort by date ascending or descending.</p>
-                </div>
-                <div class="how-item">
-                    <span class="how-icon">🔄</span>
-                    <strong>Track progress</strong>
-                    <p>Change status inline from each task card. The progress bar and stats update automatically.</p>
-                </div>
-                <div class="how-item">
-                    <span class="how-icon">📦</span>
-                    <strong>Archive</strong>
-                    <p>Marking done (checkbox) or cancelled (trash) moves the task to Archived automatically.</p>
-                </div>
-                <div class="how-item">
-                    <span class="how-icon">⚠️</span>
-                    <strong>Critical tasks</strong>
-                    <p>Tasks due within 5 days or overdue appear in the critical panel in orange or red.</p>
-                </div>
-                <div class="how-item">
-                    <span class="how-icon">📅</span>
-                    <strong>Calendar</strong>
-                    <p>Orange dots mark days with pending task deadlines for the current month.</p>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
+            </section>
+        </main>
     </div>
 
-<footer>
-    <p>TaskFlow © 2026 — Made by Judith-Arch · <a href="https://github.com/Judith-arch/taskflow-project" target="_blank">GitHub</a></p>
-</footer>
+    <footer>
+        <p>TaskFlow © 2026 — Made by Judith-Arch · <a href="https://github.com/Judith-arch/taskflow-project" target="_blank">GitHub</a></p>
+    </footer>
 
     <script src="app.js"></script>
 </body>
+</html>

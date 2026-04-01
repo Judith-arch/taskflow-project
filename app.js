@@ -24,36 +24,25 @@ function renderTasks() {
     today.setHours(0, 0, 0, 0);
 
     const statusColors = {
-        'to-do': '#888780',
+        'to-do': '#f5a623',
         'doing': '#3b82f6',
         'review': '#a855f7',
         'done': '#22c55e',
-        'cancelled': '#ef4444'
-    };
-
-    const statusBg = {
-        'to-do': 'var(--color-todo)',
-        'doing': 'var(--color-doing)',
-        'review': 'var(--color-review)',
-        'done': 'var(--color-done)',
-        'cancelled': 'var(--color-cancelled)'
+        'cancelled': '#ef4444',
+        'archived': '#9a9a8e'
     };
 
     let filtered = tasks.filter(t => {
         if (currentFilter === 'archived') {
-            return t.status === 'done' || t.status === 'cancelled';
+            return t.status === 'archived';
         }
         if (currentFilter === 'all') {
-            return t.status !== 'done' && t.status !== 'cancelled';
-        }
-        if (currentFilter === 'done' || currentFilter === 'cancelled') {
-            return false; // never show in these filters, only in archived
+            return t.status !== 'archived';
         }
         return t.status === currentFilter;
     })
     .filter(t => t.title.toLowerCase().includes(currentSearch));
 
-    // Sort by deadline
     filtered.sort((a, b) => {
         const da = new Date(a.deadline);
         const db = new Date(b.deadline);
@@ -62,27 +51,25 @@ function renderTasks() {
 
     filtered.forEach(function(task) {
         const li = document.createElement("li");
-        const color = statusColors[task.status] || '#888780';
+        const color = statusColors[task.status] || '#9a9a8e';
         const stars = '⭐'.repeat(task.priority || 1);
 
-        li.style.backgroundColor = statusBg[task.status] || 'var(--color-card)';
         li.classList.add(`status-${task.status}`);
 
-        if (currentFilter === 'archived') {
-            li.style.backgroundColor = 'var(--color-sidebar)';
-            li.style.opacity = '0.7';
-            li.querySelector('strong')
+        if (task.status === 'archived') {
+            li.style.opacity = '0.65';
         }
+
         li.innerHTML = `
             <div class="task-main">
-                <input type="checkbox" onchange="toggleComplete(${task.id})" ${task.completed ? "checked" : ""}>
+                <input type="checkbox" onchange="toggleComplete(${task.id})" ${task.status === 'archived' ? "checked" : ""}>
                 <div class="task-content">
                     <div class="task-top">
                         <strong>${task.title}</strong>
                         <span class="task-date">${task.deadline}</span>
                     </div>
                     <div class="task-meta">
-                        <select onchange="changeStatus(${task.id}, this.value)" style="color: ${color}; font-weight: 500; border: none; background: transparent; cursor: pointer; font-size: 13px;">
+                        <select onchange="changeStatus(${task.id}, this.value)" style="color: ${color}; font-weight: 600; border: none; background: transparent; cursor: pointer; font-size: 12px; font-family: inherit;">
                             <option value="to-do" ${task.status === 'to-do' ? 'selected' : ''}>● To-do</option>
                             <option value="doing" ${task.status === 'doing' ? 'selected' : ''}>● Doing</option>
                             <option value="review" ${task.status === 'review' ? 'selected' : ''}>● Review</option>
@@ -110,14 +97,12 @@ function renderTasks() {
 document.getElementById("taskForm").addEventListener("submit", function(e) {
     e.preventDefault();
 
-    // Get values from form
     const title = document.getElementById("title").value;
     const deadline = document.getElementById("deadline").value;
     const status = document.getElementById("status").value;
     const assigned = document.getElementById("assigned").value;
     const priority = document.getElementById("priority").value;
 
-    // Validate required fields
     const errorMessages = [];
     if (!title) errorMessages.push("- Task name is required");
     if (!deadline) errorMessages.push("- Deadline is required");
@@ -128,7 +113,6 @@ document.getElementById("taskForm").addEventListener("submit", function(e) {
         return;
     }
 
-    // Create task object
     const task = {
         id: Date.now(),
         title: title,
@@ -144,32 +128,29 @@ document.getElementById("taskForm").addEventListener("submit", function(e) {
     };
 
     tasks.push(task);
-    // Reset form after adding task
     document.getElementById("taskForm").reset();
     renderTasks();
     localStorage.setItem("tasks", JSON.stringify(tasks));
-    console.log("Task added:", tasks);
 });
 
-// Cancel a task (move to cancelled instead of deleting)
+// Trash icon → delete permanently from localStorage
 function cancelTask(id) {
-    tasks = tasks.map(function(task) {
-        if (task.id === id) {
-            task.status = 'cancelled';
-            task.completed = false;
-        }
-        return task;
-    });
+    tasks = tasks.filter(t => t.id !== id);
     renderTasks();
     localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
-// Mark a task as completed or not
+// Checkbox → toggle archived status
 function toggleComplete(id) {
     tasks = tasks.map(function(task) {
         if (task.id === id) {
-            task.completed = !task.completed;
-            task.status = task.completed ? 'done' : 'to-do';
+            if (task.status === 'archived') {
+                task.status = 'to-do';
+                task.completed = false;
+            } else {
+                task.status = 'archived';
+                task.completed = true;
+            }
         }
         return task;
     });
@@ -177,7 +158,7 @@ function toggleComplete(id) {
     localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
-// Change task status directly from the list
+// Change task status via dropdown
 function changeStatus(id, newStatus) {
     tasks = tasks.map(function(task) {
         if (task.id === id) {
@@ -190,13 +171,14 @@ function changeStatus(id, newStatus) {
     localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
-// Update statistics
+// Update statistics + donut chart
 function updateStats() {
-    const total = tasks.length;
-    const completed = tasks.filter(t => t.completed).length;
-    const inProgress = tasks.filter(t => t.status === 'doing' || t.status === 'review').length;
-    const todo = tasks.filter(t => t.status === 'to-do').length;
-    const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
+    const active = tasks.filter(t => t.status !== 'archived');
+    const total = active.length;
+    const completed = active.filter(t => t.status === 'done').length;
+    const inProgress = active.filter(t => t.status === 'doing' || t.status === 'review').length;
+    const todo = active.filter(t => t.status === 'to-do').length;
+    const cancelled = active.filter(t => t.status === 'cancelled').length;
 
     document.getElementById("numTotalTasks").textContent = "Total";
     document.getElementById("numTotalTasks").setAttribute("data-value", total);
@@ -206,11 +188,58 @@ function updateStats() {
     document.getElementById("numTaskInProgress").setAttribute("data-value", inProgress);
     document.getElementById("numTaskTodo").textContent = "To-do";
     document.getElementById("numTaskTodo").setAttribute("data-value", todo);
-    document.getElementById("progressBar").style.width = percentage + "%";
-    document.getElementById("progressLabel").textContent = percentage + "% completed";
+
+    // Update donut center number
+    const donutTotal = document.getElementById("donutTotal");
+    if (donutTotal) donutTotal.textContent = total;
+
+    // Update donut SVG segments
+    updateDonut(todo, inProgress, completed, cancelled, total);
 }
 
-// Update critical tasks (deadline in next 5 days)
+function updateDonut(todo, inProgress, done, cancelled, total) {
+    const circumference = 2 * Math.PI * 60; // r=60 → ~377
+    const gap = 2; // small gap between segments in px
+
+    const segments = [
+        { id: 'donutTodo', count: todo },
+        { id: 'donutDoing', count: inProgress },
+        { id: 'donutDone', count: done },
+        { id: 'donutCancelled', count: cancelled },
+    ];
+
+    // Update track color
+    const track = document.getElementById('donutTrack');
+    if (track) {
+        track.style.stroke = getComputedStyle(document.documentElement)
+            .getPropertyValue('--border') || 'rgba(255,255,255,0.07)';
+    }
+
+    if (total === 0) {
+        segments.forEach(s => {
+            const el = document.getElementById(s.id);
+            if (el) el.setAttribute('stroke-dasharray', `0 ${circumference}`);
+        });
+        return;
+    }
+
+    let offset = 0;
+    segments.forEach(s => {
+        const el = document.getElementById(s.id);
+        if (!el) return;
+        const length = (s.count / total) * (circumference - gap * segments.filter(x => x.count > 0).length);
+        if (s.count === 0) {
+            el.setAttribute('stroke-dasharray', `0 ${circumference}`);
+            el.setAttribute('stroke-dashoffset', '0');
+        } else {
+            el.setAttribute('stroke-dasharray', `${length} ${circumference - length}`);
+            el.setAttribute('stroke-dashoffset', -offset);
+            offset += length + gap;
+        }
+    });
+}
+
+// Update critical tasks
 function updateCriticalTasks() {
     const criticalList = document.getElementById("criticalList");
     criticalList.innerHTML = "";
@@ -229,25 +258,25 @@ function updateCriticalTasks() {
     });
 
     if (critical.length === 0) {
-        criticalList.innerHTML = "<li style='color: var(--color-text-muted); font-size: 13px;'>No critical tasks</li>";
+        criticalList.innerHTML = "<li style='color: var(--text-muted); font-size: 12px; background: none; border: none; box-shadow: none; padding: 6px 0;'>No critical tasks</li>";
         return;
     }
 
     critical.forEach(t => {
         const li = document.createElement("li");
-        if (currentFilter === 'archived') {
-            li.classList.add('archived-task');
-        }
         const deadline = new Date(t.deadline);
         const isOverdue = deadline < today;
         li.textContent = `${isOverdue ? '⚠️' : '🔔'} ${t.title} — ${t.deadline}`;
-        li.style.fontSize = "13px";
-        li.style.color = isOverdue ? '#ef4444' : '#f59e0b';
+        li.style.fontSize = "12px";
+        li.style.color = isOverdue ? '#ef4444' : '#f5a623';
+        li.style.background = isOverdue ? 'rgba(239,68,68,0.08)' : 'rgba(245,166,35,0.08)';
+        li.style.border = isOverdue ? '1px solid rgba(239,68,68,0.2)' : '1px solid rgba(245,166,35,0.2)';
+        li.style.fontWeight = '500';
         criticalList.appendChild(li);
     });
 }
 
-// Render simple calendar for current month
+// Render calendar
 function renderCalendar() {
     const calendarBody = document.getElementById("calendarBody");
     if (!calendarBody) return;
@@ -259,7 +288,6 @@ function renderCalendar() {
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    // Get days that have tasks
     const taskDays = new Set(tasks.map(t => {
         const d = new Date(t.deadline);
         if (d.getFullYear() === year && d.getMonth() === month) {
@@ -293,13 +321,13 @@ function renderCalendar() {
     calendarBody.innerHTML = html;
 }
 
-// Search tasks by title
+// Search
 document.getElementById("search").addEventListener("input", function() {
     currentSearch = this.value.toLowerCase();
     renderTasks();
 });
 
-// Load tasks from LocalStorage on startup
+// Load from localStorage
 const savedTasks = localStorage.getItem("tasks");
 if (savedTasks) {
     tasks = JSON.parse(savedTasks);
@@ -308,19 +336,36 @@ if (savedTasks) {
     renderCalendar();
 }
 
-// Dark mode toggle
+// Dark/Light mode toggle — smooth animated version
 function toggleDark() {
-    document.documentElement.classList.toggle('dark');
-    const isDark = document.documentElement.classList.contains('dark');
-    localStorage.setItem('darkMode', isDark);
-    document.getElementById('darkToggle').textContent = isDark ? '☀️ Light mode' : '🌙 Dark mode';
+    const html = document.documentElement;
+    // Add transition class, toggle, remove after animation
+    html.classList.add('theme-transitioning');
+    const isNowLight = html.classList.toggle('light');
+    localStorage.setItem('taskflow-theme', isNowLight ? 'light' : 'dark');
+    updateToggleLabel();
+    // Remove transition class after transition completes
+    setTimeout(() => html.classList.remove('theme-transitioning'), 500);
+    // Re-render donut track (border color changes)
+    setTimeout(() => updateStats(), 50);
 }
 
-// Load dark mode preference — default is dark
-if (localStorage.getItem('darkMode') !== 'false') {
-    document.documentElement.classList.add('dark');
-    document.getElementById('darkToggle').textContent = '☀️ Light mode';
+function updateToggleLabel() {
+    const isLight = document.documentElement.classList.contains('light');
+    const btn = document.getElementById('darkToggle');
+    if (btn) btn.textContent = isLight ? '🌙 Dark mode' : '☀️ Light mode';
 }
+
+// Load saved theme — default is dark
+(function() {
+    const saved = localStorage.getItem('taskflow-theme');
+    if (saved === 'light') {
+        document.documentElement.classList.add('light');
+    } else {
+        document.documentElement.classList.remove('light');
+    }
+    updateToggleLabel();
+})();
 
 // Toggle sidebar
 function toggleSidebar() {
@@ -330,21 +375,9 @@ function toggleSidebar() {
     btn.textContent = sidebar.classList.contains('collapsed') ? '→' : '←';
 }
 
-// Ascendin / Descending sort
+// Sort toggle
 function toggleSort() {
     sortAscending = !sortAscending;
     document.getElementById('sortBtn').textContent = sortAscending ? '↑↓' : '↓↑';
     renderTasks();
-}
-
-function cancelTask(id) {
-    tasks = tasks.map(function(task) {
-        if (task.id === id) {
-            task.status = 'cancelled';
-            task.completed = false;
-        }
-        return task;
-    });
-    renderTasks();
-    localStorage.setItem("tasks", JSON.stringify(tasks));
 }

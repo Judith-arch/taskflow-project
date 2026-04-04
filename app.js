@@ -5,13 +5,20 @@ let currentFilter = 'all';
 let currentSearch = '';
 let sortAscending = true;
 
+const CRITICAL_TASKS_MAX = 4;
+
+function saveTasks() {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+
 // Filter tasks by status
-function filterTasks(filter) {
+function filterTasks(filter, ev) {
     currentFilter = filter;
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    event.target.classList.add('active');
+    const btn = ev && (ev.currentTarget || ev.target);
+    if (btn && btn.classList) btn.classList.add('active');
     renderTasks();
 }
 
@@ -19,9 +26,6 @@ function filterTasks(filter) {
 function renderTasks() {
     const taskList = document.getElementById("taskList");
     taskList.innerHTML = "";
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
 
     const statusColors = {
         'to-do': '#f5a623',
@@ -62,7 +66,7 @@ function renderTasks() {
 
         li.innerHTML = `
             <div class="task-main">
-                <input type="checkbox" onchange="toggleComplete(${task.id})" ${task.status === 'archived' ? "checked" : ""}>
+                <input type="checkbox" onchange="toggleComplete(${task.id}, this)" ${task.status === 'archived' ? "checked" : ""}>
                 <div class="task-content">
                     <div class="task-top">
                         <strong>${task.title}</strong>
@@ -130,32 +134,49 @@ document.getElementById("taskForm").addEventListener("submit", function(e) {
     tasks.push(task);
     document.getElementById("taskForm").reset();
     renderTasks();
-    localStorage.setItem("tasks", JSON.stringify(tasks));
+    saveTasks();
 });
 
 // Trash icon → delete permanently from localStorage
 function cancelTask(id) {
+    if (!confirm('Delete this task? This cannot be undone.')) return;
     tasks = tasks.filter(t => t.id !== id);
     renderTasks();
-    localStorage.setItem("tasks", JSON.stringify(tasks));
+    saveTasks();
 }
 
 // Checkbox → toggle archived status
-function toggleComplete(id) {
-    tasks = tasks.map(function(task) {
-        if (task.id === id) {
-            if (task.status === 'archived') {
-                task.status = 'to-do';
-                task.completed = false;
-            } else {
-                task.status = 'archived';
-                task.completed = true;
+function toggleComplete(id, checkbox) {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+
+    if (task.status === 'archived') {
+        tasks = tasks.map(function(t) {
+            if (t.id === id) {
+                t.status = 'to-do';
+                t.completed = false;
             }
+            return t;
+        });
+    } else {
+        if (
+            !confirm(
+                'Archive this task? It will be marked as done and counted in your completed statistics.'
+            )
+        ) {
+            if (checkbox) checkbox.checked = false;
+            return;
         }
-        return task;
-    });
+        tasks = tasks.map(function(t) {
+            if (t.id === id) {
+                t.status = 'archived';
+                t.completed = true;
+            }
+            return t;
+        });
+    }
     renderTasks();
-    localStorage.setItem("tasks", JSON.stringify(tasks));
+    saveTasks();
 }
 
 // Change task status via dropdown
@@ -168,17 +189,20 @@ function changeStatus(id, newStatus) {
         return task;
     });
     renderTasks();
-    localStorage.setItem("tasks", JSON.stringify(tasks));
+    saveTasks();
 }
 
-// Update statistics + donut chart
+// Update statistics + donut chart (all tasks; archived count as completed / “done” slice)
 function updateStats() {
-    const active = tasks.filter(t => t.status !== 'archived');
-    const total = active.length;
-    const completed = active.filter(t => t.status === 'done').length;
-    const inProgress = active.filter(t => t.status === 'doing' || t.status === 'review').length;
-    const todo = active.filter(t => t.status === 'to-do').length;
-    const cancelled = active.filter(t => t.status === 'cancelled').length;
+    const total = tasks.length;
+    const completed = tasks.filter(
+        t => t.status === 'done' || t.status === 'archived'
+    ).length;
+    const inProgress = tasks.filter(
+        t => t.status === 'doing' || t.status === 'review'
+    ).length;
+    const todo = tasks.filter(t => t.status === 'to-do').length;
+    const cancelled = tasks.filter(t => t.status === 'cancelled').length;
 
     document.getElementById("numTotalTasks").textContent = "Total";
     document.getElementById("numTotalTasks").setAttribute("data-value", total);
@@ -197,6 +221,13 @@ function updateStats() {
     updateDonut(todo, inProgress, completed, cancelled, total);
 }
 
+const DONUT_SEGMENT_STROKE = {
+    donutTodo: '#f5a623',
+    donutDoing: '#3b82f6',
+    donutDone: '#22c55e',
+    donutCancelled: '#ef4444'
+};
+
 function updateDonut(todo, inProgress, done, cancelled, total) {
     const circumference = 2 * Math.PI * 60; // r=60 → ~377
     const gap = 2; // small gap between segments in px
@@ -205,7 +236,7 @@ function updateDonut(todo, inProgress, done, cancelled, total) {
         { id: 'donutTodo', count: todo },
         { id: 'donutDoing', count: inProgress },
         { id: 'donutDone', count: done },
-        { id: 'donutCancelled', count: cancelled },
+        { id: 'donutCancelled', count: cancelled }
     ];
 
     // Update track color
@@ -215,33 +246,46 @@ function updateDonut(todo, inProgress, done, cancelled, total) {
             .getPropertyValue('--border') || 'rgba(255,255,255,0.07)';
     }
 
+    function hideSegment(el) {
+        if (!el) return;
+        el.setAttribute('stroke-dasharray', `0 ${circumference}`);
+        el.setAttribute('stroke-dashoffset', '0');
+        el.setAttribute('stroke', 'none');
+    }
+
+    function showSegment(el, color) {
+        if (!el) return;
+        el.setAttribute('stroke', color);
+    }
+
     if (total === 0) {
-        segments.forEach(s => {
-            const el = document.getElementById(s.id);
-            if (el) el.setAttribute('stroke-dasharray', `0 ${circumference}`);
-        });
+        segments.forEach(s => hideSegment(document.getElementById(s.id)));
         return;
     }
 
     let offset = 0;
+    const nonZeroCount = segments.filter(x => x.count > 0).length;
+    const arcBudget = circumference - gap * nonZeroCount;
     segments.forEach(s => {
         const el = document.getElementById(s.id);
         if (!el) return;
-        const length = (s.count / total) * (circumference - gap * segments.filter(x => x.count > 0).length);
+        const color = DONUT_SEGMENT_STROKE[s.id];
         if (s.count === 0) {
-            el.setAttribute('stroke-dasharray', `0 ${circumference}`);
-            el.setAttribute('stroke-dashoffset', '0');
-        } else {
-            el.setAttribute('stroke-dasharray', `${length} ${circumference - length}`);
-            el.setAttribute('stroke-dashoffset', -offset);
-            offset += length + gap;
+            hideSegment(el);
+            return;
         }
+        showSegment(el, color);
+        const length = (s.count / total) * arcBudget;
+        el.setAttribute('stroke-dasharray', `${length} ${circumference - length}`);
+        el.setAttribute('stroke-dashoffset', String(-offset));
+        offset += length + gap;
     });
 }
 
 // Update critical tasks
 function updateCriticalTasks() {
     const criticalList = document.getElementById("criticalList");
+    const summaryEl = document.getElementById("criticalSummary");
     criticalList.innerHTML = "";
 
     const today = new Date();
@@ -252,17 +296,39 @@ function updateCriticalTasks() {
     const critical = tasks.filter(t => {
         const deadline = new Date(t.deadline);
         return !t.completed &&
+                t.status !== 'archived' &&
                 t.status !== 'cancelled' &&
                 t.status !== 'done' &&
                 ((deadline >= today && deadline <= in5days) || deadline < today);
     });
 
     if (critical.length === 0) {
+        if (summaryEl) {
+            summaryEl.hidden = true;
+            summaryEl.textContent = "";
+        }
         criticalList.innerHTML = "<li style='color: var(--text-muted); font-size: 12px; background: none; border: none; box-shadow: none; padding: 6px 0;'>No critical tasks</li>";
         return;
     }
 
-    critical.forEach(t => {
+    critical.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+    const totalCritical = critical.length;
+    const toShow = critical.slice(0, CRITICAL_TASKS_MAX);
+
+    if (summaryEl) {
+        if (totalCritical > CRITICAL_TASKS_MAX) {
+            summaryEl.hidden = false;
+            summaryEl.textContent =
+                "These are your oldest critical tasks — " +
+                totalCritical +
+                " in total. Make sure to keep up ;)";
+        } else {
+            summaryEl.hidden = true;
+            summaryEl.textContent = "";
+        }
+    }
+
+    toShow.forEach(t => {
         const li = document.createElement("li");
         const deadline = new Date(t.deadline);
         const isOverdue = deadline < today;
@@ -330,11 +396,19 @@ document.getElementById("search").addEventListener("input", function() {
 // Load from localStorage
 const savedTasks = localStorage.getItem("tasks");
 if (savedTasks) {
-    tasks = JSON.parse(savedTasks);
-    renderTasks();
-} else {
-    renderCalendar();
+    try {
+        const parsed = JSON.parse(savedTasks);
+        if (Array.isArray(parsed)) {
+            tasks = parsed.map(t => {
+                if (t && t.status === 'archived') t.completed = true;
+                return t;
+            });
+        }
+    } catch (e) {
+        tasks = [];
+    }
 }
+renderTasks();
 
 // Dark/Light mode toggle — smooth animated version
 function toggleDark() {

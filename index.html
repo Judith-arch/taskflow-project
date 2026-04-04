@@ -83,13 +83,13 @@
                         <input type="search" id="search" placeholder="Search tasks…">
                     </div>
                     <div class="filters">
-                        <button onclick="filterTasks('all')" class="filter-btn active">All</button>
-                        <button onclick="filterTasks('to-do')" class="filter-btn">To-do</button>
-                        <button onclick="filterTasks('doing')" class="filter-btn">Doing</button>
-                        <button onclick="filterTasks('review')" class="filter-btn">Review</button>
-                        <button onclick="filterTasks('done')" class="filter-btn">Done</button>
-                        <button onclick="filterTasks('cancelled')" class="filter-btn">Cancelled</button>
-                        <button onclick="filterTasks('archived')" class="filter-btn">Archived</button>
+                        <button onclick="filterTasks('all', event)" class="filter-btn active">All</button>
+                        <button onclick="filterTasks('to-do', event)" class="filter-btn">To-do</button>
+                        <button onclick="filterTasks('doing', event)" class="filter-btn">Doing</button>
+                        <button onclick="filterTasks('review', event)" class="filter-btn">Review</button>
+                        <button onclick="filterTasks('done', event)" class="filter-btn">Done</button>
+                        <button onclick="filterTasks('cancelled', event)" class="filter-btn">Cancelled</button>
+                        <button onclick="filterTasks('archived', event)" class="filter-btn">Archived</button>
                         <button onclick="toggleSort()" id="sortBtn" class="filter-btn" aria-label="Toggle sort order">↑↓</button>
                     </div>
                     <ul id="taskList"></ul>
@@ -107,20 +107,20 @@
                                 fill="none" stroke-width="14" stroke-linecap="round"/>
                             <!-- todo segment -->
                             <circle id="donutTodo" cx="80" cy="80" r="60"
-                                fill="none" stroke="#f5a623" stroke-width="14" stroke-linecap="round"
-                                stroke-dasharray="0 377" style="transition: stroke-dasharray 0.6s cubic-bezier(.4,0,.2,1)"/>
+                                fill="none" stroke="#f5a623" stroke-width="14" stroke-linecap="butt"
+                                stroke-dasharray="0 377" style="transition: stroke-dasharray 0.6s cubic-bezier(.4,0,.2,1), stroke 0.2s ease"/>
                             <!-- doing segment -->
                             <circle id="donutDoing" cx="80" cy="80" r="60"
-                                fill="none" stroke="#3b82f6" stroke-width="14" stroke-linecap="round"
-                                stroke-dasharray="0 377" style="transition: stroke-dasharray 0.6s cubic-bezier(.4,0,.2,1), stroke-dashoffset 0.6s cubic-bezier(.4,0,.2,1)"/>
+                                fill="none" stroke="#3b82f6" stroke-width="14" stroke-linecap="butt"
+                                stroke-dasharray="0 377" style="transition: stroke-dasharray 0.6s cubic-bezier(.4,0,.2,1), stroke-dashoffset 0.6s cubic-bezier(.4,0,.2,1), stroke 0.2s ease"/>
                             <!-- done segment -->
                             <circle id="donutDone" cx="80" cy="80" r="60"
-                                fill="none" stroke="#22c55e" stroke-width="14" stroke-linecap="round"
-                                stroke-dasharray="0 377" style="transition: stroke-dasharray 0.6s cubic-bezier(.4,0,.2,1), stroke-dashoffset 0.6s cubic-bezier(.4,0,.2,1)"/>
-                            <!-- cancelled segment -->
+                                fill="none" stroke="#22c55e" stroke-width="14" stroke-linecap="butt"
+                                stroke-dasharray="0 377" style="transition: stroke-dasharray 0.6s cubic-bezier(.4,0,.2,1), stroke-dashoffset 0.6s cubic-bezier(.4,0,.2,1), stroke 0.2s ease"/>
+                            <!-- other (cancelled) segment -->
                             <circle id="donutCancelled" cx="80" cy="80" r="60"
-                                fill="none" stroke="#ef4444" stroke-width="14" stroke-linecap="round"
-                                stroke-dasharray="0 377" style="transition: stroke-dasharray 0.6s cubic-bezier(.4,0,.2,1), stroke-dashoffset 0.6s cubic-bezier(.4,0,.2,1)"/>
+                                fill="none" stroke="#ef4444" stroke-width="14" stroke-linecap="butt"
+                                stroke-dasharray="0 377" style="transition: stroke-dasharray 0.6s cubic-bezier(.4,0,.2,1), stroke-dashoffset 0.6s cubic-bezier(.4,0,.2,1), stroke 0.2s ease"/>
                         </svg>
                         <div class="donut-center">
                             <span class="donut-center-number" id="donutTotal">0</span>
@@ -131,7 +131,13 @@
                         <div class="legend-item"><div class="legend-dot" style="background:#f5a623"></div>To-do</div>
                         <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>Doing</div>
                         <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Done</div>
-                        <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Cancelled</div>
+                        <div class="legend-item legend-item--stack">
+                            <div class="legend-dot" style="background:#ef4444"></div>
+                            <div class="legend-text">
+                                <span class="legend-title">Other</span>
+                                <span class="legend-sub">Cancelled &amp; reviewed</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -156,6 +162,7 @@
             <div class="bottom-section">
                 <div class="critical-tasks">
                     <h3>Critical tasks</h3>
+                    <p id="criticalSummary" class="critical-summary" hidden aria-live="polite"></p>
                     <ul id="criticalList"></ul>
                 </div>
 

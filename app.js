@@ -7,6 +7,67 @@ let sortAscending = true;
 
 const CRITICAL_TASKS_MAX = 4;
 
+const LS_SKIP_DELETE_CONFIRM = 'taskflow-skip-delete-confirm';
+const LS_SKIP_ARCHIVE_CONFIRM = 'taskflow-skip-archive-confirm';
+
+function confirmAction(options) {
+    return new Promise(function(resolve) {
+        if (localStorage.getItem(options.skipKey) === '1') {
+            resolve(true);
+            return;
+        }
+        const overlay = document.getElementById('confirmOverlay');
+        const titleEl = document.getElementById('confirmTitle');
+        const msgEl = document.getElementById('confirmMessage');
+        const skipEl = document.getElementById('confirmSkip');
+        const okBtn = document.getElementById('confirmOk');
+        const cancelBtn = document.getElementById('confirmCancel');
+
+        titleEl.textContent = options.title;
+        msgEl.textContent = options.message;
+        okBtn.textContent = options.confirmLabel || 'Confirm';
+        skipEl.checked = false;
+
+        function cleanup() {
+            overlay.hidden = true;
+            overlay.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('confirm-modal-open');
+            document.removeEventListener('keydown', onKey);
+            okBtn.removeEventListener('click', onOk);
+            cancelBtn.removeEventListener('click', onCancel);
+            overlay.removeEventListener('click', onBackdrop);
+        }
+
+        function onOk() {
+            if (skipEl.checked) localStorage.setItem(options.skipKey, '1');
+            cleanup();
+            resolve(true);
+        }
+
+        function onCancel() {
+            cleanup();
+            resolve(false);
+        }
+
+        function onKey(e) {
+            if (e.key === 'Escape') onCancel();
+        }
+
+        function onBackdrop(e) {
+            if (e.target === overlay) onCancel();
+        }
+
+        overlay.hidden = false;
+        overlay.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('confirm-modal-open');
+        document.addEventListener('keydown', onKey);
+        okBtn.addEventListener('click', onOk);
+        cancelBtn.addEventListener('click', onCancel);
+        overlay.addEventListener('click', onBackdrop);
+        okBtn.focus();
+    });
+}
+
 function saveTasks() {
     localStorage.setItem("tasks", JSON.stringify(tasks));
 }
@@ -138,15 +199,21 @@ document.getElementById("taskForm").addEventListener("submit", function(e) {
 });
 
 // Trash icon → delete permanently from localStorage
-function cancelTask(id) {
-    if (!confirm('Delete this task? This cannot be undone.')) return;
+async function cancelTask(id) {
+    const ok = await confirmAction({
+        title: 'Delete task',
+        message: 'Delete this task? This cannot be undone.',
+        skipKey: LS_SKIP_DELETE_CONFIRM,
+        confirmLabel: 'Delete'
+    });
+    if (!ok) return;
     tasks = tasks.filter(t => t.id !== id);
     renderTasks();
     saveTasks();
 }
 
 // Checkbox → toggle archived status
-function toggleComplete(id, checkbox) {
+async function toggleComplete(id, checkbox) {
     const task = tasks.find(t => t.id === id);
     if (!task) return;
 
@@ -159,11 +226,14 @@ function toggleComplete(id, checkbox) {
             return t;
         });
     } else {
-        if (
-            !confirm(
-                'Archive this task? It will be marked as done and counted in your completed statistics.'
-            )
-        ) {
+        const confirmed = await confirmAction({
+            title: 'Archive task',
+            message:
+                'Archive this task? It will be marked as done and counted in your completed statistics.',
+            skipKey: LS_SKIP_ARCHIVE_CONFIRM,
+            confirmLabel: 'Archive'
+        });
+        if (!confirmed) {
             if (checkbox) checkbox.checked = false;
             return;
         }

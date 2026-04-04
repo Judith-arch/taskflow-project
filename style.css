@@ -96,6 +96,10 @@ html.theme-transitioning *::after {
         box-shadow 0.4s ease !important;
 }
 
+html {
+    height: 100%;
+}
+
 body {
     background-color: var(--bg);
     font-family: var(--font);
@@ -103,7 +107,10 @@ body {
     color: var(--text);
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    min-height: 100%;
+    height: 100%;
+    max-height: 100vh;
+    overflow: hidden;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
 }
@@ -124,16 +131,23 @@ body::before {
 =========================== */
 .app-wrapper {
     display: flex;
-    flex: 1;
+    flex: 1 1 auto;
+    min-height: 0;
     position: relative;
     z-index: 1;
+    overflow: hidden;
 }
 
 main {
-    flex: 1;
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
     padding: 24px 28px;
     background-color: var(--bg);
-    min-width: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
     animation: fadeIn 0.4s ease;
 }
 
@@ -151,10 +165,10 @@ header {
     justify-content: space-between;
     padding: 0 20px;
     height: 54px;
+    flex-shrink: 0;
     border-bottom: 1px solid var(--border);
     background: var(--bg-surface);
-    position: sticky;
-    top: 0;
+    position: relative;
     z-index: 100;
     backdrop-filter: blur(12px);
 }
@@ -208,18 +222,19 @@ main header h2 {
 =========================== */
 .sidebar {
     width: 210px;
-    min-height: 100vh;
-    height: 100%;
-    position: sticky;
-    top: 0;
-    align-self: flex-start;
+    flex-shrink: 0;
+    align-self: stretch;
+    min-height: 0;
+    position: relative;
     background-color: var(--bg-surface);
     border-right: 1px solid var(--border);
     padding: 20px 14px;
     display: flex;
     flex-direction: column;
     gap: 20px;
+    overflow-x: hidden;
     overflow-y: auto;
+    overscroll-behavior: contain;
     transition: width var(--transition);
     z-index: 50;
 }
@@ -1032,6 +1047,7 @@ li.status-archived  { background-color: var(--color-archived);  border-left: 3px
    FOOTER
 =========================== */
 footer {
+    flex-shrink: 0;
     text-align: center;
     padding: 14px;
     font-size: 12px;
@@ -1041,6 +1057,119 @@ footer {
     font-family: var(--font-mono);
     position: relative;
     z-index: 1;
+}
+
+/* ===========================
+   CONFIRM DIALOG
+=========================== */
+.confirm-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(10, 8, 6, 0.72);
+    backdrop-filter: blur(6px);
+}
+
+:root.light .confirm-overlay {
+    background: rgba(30, 23, 16, 0.45);
+}
+
+.confirm-dialog {
+    width: 100%;
+    max-width: 400px;
+    padding: 22px 24px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-lg);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+}
+
+.confirm-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 10px;
+    letter-spacing: -0.02em;
+}
+
+.confirm-message {
+    font-size: 14px;
+    color: var(--text-subtle);
+    margin: 0 0 16px;
+    line-height: 1.5;
+}
+
+.confirm-skip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--text-muted);
+    cursor: pointer;
+    margin-bottom: 18px;
+    user-select: none;
+}
+
+.confirm-skip input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+.confirm-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.confirm-btn {
+    padding: 8px 18px;
+    border-radius: var(--r-sm);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: var(--font);
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all var(--transition);
+}
+
+.confirm-btn--secondary {
+    background: var(--bg-elevated);
+    border-color: var(--border-strong);
+    color: var(--text-subtle);
+}
+
+.confirm-btn--secondary:hover {
+    border-color: var(--accent);
+    color: var(--text);
+}
+
+.confirm-btn--primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+}
+
+.confirm-btn--primary:hover {
+    filter: brightness(1.08);
+}
+
+body.confirm-modal-open {
+    overflow: hidden !important;
+}
+
+body.confirm-modal-open main {
+    overflow: hidden;
+}
+
+#confirmOverlay[hidden] {
+    display: none !important;
 }
 
 footer a { color: var(--accent); text-decoration: none; }
@@ -1084,17 +1213,39 @@ footer a:hover { text-decoration: underline; }
 }
 
 @media (max-width: 768px) {
-    .app-wrapper { flex-direction: column; }
+    html, body {
+        max-height: none;
+        height: auto;
+        min-height: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    .app-wrapper {
+        flex: 1 1 auto;
+        min-height: auto;
+        overflow: visible;
+    }
+
     .sidebar {
         width: 100%;
         height: auto;
+        min-height: 0;
         position: relative;
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
+        align-self: stretch;
+        overflow: visible;
     }
+
     .sidebar .projects { display: none; }
-    main { padding: 16px; }
+
+    main {
+        padding: 16px;
+        overflow: visible;
+        min-height: 0;
+    }
 }
 
 @media (max-width: 480px) {

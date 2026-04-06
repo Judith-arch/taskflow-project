@@ -616,18 +616,20 @@ TASK CARD
 }
 
 .task-cancel {
-    background: none;
+    background: rgba(240,96,64,0.12);
     border: none;
-    padding: 4px 6px;
+    padding: 6px 8px;
     cursor: pointer;
-    opacity: 0.35;
-    font-size: 14px;
+    font-size: 18px;
     border-radius: var(--r-sm);
     transition: all var(--transition);
     flex-shrink: 0;
 }
 
-.task-cancel:hover { opacity: 1; background: rgba(240,96,64,0.15); }
+.task-cancel:hover {
+    background: rgba(240,96,64,0.28);
+    transform: scale(1.2);
+}
 
 /* ===========================
 STATISTICS — 3 column layout
@@ -810,11 +812,11 @@ STATISTICS — 3 column layout
 }
 
 .progress-pct {
-    font-size: 13px;
-    font-weight: 700;
+    font-size: 20px;
+    font-weight: 100;
     font-family: var(--font-mono);
     color: var(--text);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
 }
 
 .progress-linear-track {

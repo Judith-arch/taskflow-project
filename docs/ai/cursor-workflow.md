@@ -1,41 +1,50 @@
-# 📘 Documentación – Mejoras realizadas con Cursor
+# 📘 Documentation – Improvements made with Cursor
 
-## 🧠 Introducción
+## 📑 Table of Contents
 
-Durante el desarrollo de la aplicación **TaskFlow**, se utilizó Cursor como asistente para mejorar la calidad del código, la experiencia de usuario y la robustez general del sistema.
-
-A continuación se documentan **dos ejemplos concretos** donde Cursor aportó mejoras significativas.
-
----
-
-# ✅ Ejemplo 1 — Mejora de fiabilidad y estructura en `app.js`
-
-## 🔍 Problema inicial
-
-El archivo `app.js` presentaba varios problemas estructurales:
-
-* Dependencia del objeto global `event`
-* Código duplicado al guardar en `localStorage`
-* Falta de control de errores en `JSON.parse`
-* Comportamiento inconsistente en la carga inicial
-* Código innecesario (variables no usadas)
+1. [Introduction](#introduction)
+2. [Example 1 — Reliability and structure improvements in app.js](#example-1--reliability-and-structure-improvements-in-appjs)
+3. [Example 2 — UX and critical tasks logic improvements](#example-2--ux-and-critical-tasks-logic-improvements)
+4. [Conclusion](#conclusion)
+5. [Shortcuts](#shortcuts)
+6. [MCP GitHub Installation](#mcp-github-installation)
 
 ---
 
-## ⚙️ Mejoras aplicadas
+## 🧠 Introduction
 
-### 1. Eliminación de dependencia global de `event`
+During the development of **TaskFlow**, Cursor was used as an AI assistant to improve code quality, user experience and overall robustness.
 
-Antes:
+Below are **two concrete examples** where Cursor contributed significant improvements.
 
+---
+
+## ✅ Example 1 — Reliability and structure improvements in `app.js`
+
+### 🔍 Initial problem
+
+The `app.js` file had several structural issues:
+
+* Dependency on the global `event` object
+* Duplicated `localStorage` save logic
+* No error handling for `JSON.parse`
+* Inconsistent behaviour on initial load
+* Dead code (unused variables)
+
+---
+
+### ⚙️ Improvements applied
+
+#### 1. Removing the global `event` dependency
+
+Before:
 ```js
 function filterTasks(filter) {
     event.target.classList.add("active");
 }
 ```
 
-Después:
-
+After:
 ```js
 function filterTasks(filter, ev) {
     const target = ev?.currentTarget || ev?.target;
@@ -43,46 +52,36 @@ function filterTasks(filter, ev) {
 }
 ```
 
-✔ Mejora:
-
-* Compatible con modo estricto
-* Más robusto y reutilizable
+✔ Why it matters: compatible with strict mode, more robust and reusable.
 
 ---
 
-### 2. Centralización de persistencia (`saveTasks()`)
+#### 2. Centralising persistence with `saveTasks()`
 
-Antes:
-
+Before:
 ```js
 localStorage.setItem("tasks", JSON.stringify(tasks));
 ```
 
-Después:
-
+After:
 ```js
 function saveTasks() {
     localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 ```
 
-✔ Mejora:
-
-* Evita duplicación
-* Facilita mantenimiento futuro (API, validaciones, etc.)
+✔ Why it matters: avoids duplication and makes future changes (API calls, validation) easier.
 
 ---
 
-### 3. Manejo seguro de `localStorage`
+#### 3. Safe `localStorage` parsing
 
-Antes:
-
+Before:
 ```js
 const tasks = JSON.parse(localStorage.getItem("tasks"));
 ```
 
-Después:
-
+After:
 ```js
 let tasks = [];
 
@@ -94,67 +93,54 @@ try {
 }
 ```
 
-✔ Mejora:
-
-* Evita errores si los datos están corruptos
-* Mejora la estabilidad de la app
+✔ Why it matters: prevents crashes if stored data is corrupted.
 
 ---
 
-### 4. Corrección del flujo inicial
+#### 4. Fixing the initial render flow
 
-Antes:
+Before: only the calendar was rendered on first load.
 
-* Solo se renderizaba el calendario en primera carga
-
-Después:
-
+After:
 ```js
 renderTasks();
 updateStats();
 updateCriticalTasks();
 ```
 
-✔ Mejora:
-
-* Estado consistente desde el inicio
-* No depende de que el usuario cree tareas
+✔ Why it matters: consistent state from the start, regardless of whether the user has tasks.
 
 ---
 
-### 5. Limpieza de código muerto
+#### 5. Removing dead code
 
-Eliminación de variables no utilizadas (`today`, `setHours`).
+Unused variables (`today`, `setHours`) were removed.
 
-✔ Mejora:
-
-* Código más limpio
-* Menor confusión futura
+✔ Why it matters: cleaner code, less confusion for future maintainers.
 
 ---
 
-## 🎯 Resultado
+### 🎯 Result
 
-* Código más mantenible
-* Menos errores en ejecución
-* Mejor base para escalar el proyecto
-
----
-
-# ✅ Ejemplo 2 — Mejora de UX y lógica de tareas críticas
-
-## 🔍 Problema inicial
-
-* Número ilimitado de tareas críticas
-* Mala separación visual entre tareas
-* Falta de información contextual para el usuario
+* More maintainable codebase
+* Fewer runtime errors
+* Better foundation for scaling the project
 
 ---
 
-## ⚙️ Mejoras aplicadas
+## ✅ Example 2 — UX and critical tasks logic improvements
 
-### 1. Límite de tareas críticas
+### 🔍 Initial problem
 
+* No limit on the number of critical tasks shown
+* Poor visual separation between task items
+* Lack of contextual information for the user
+
+---
+
+### ⚙️ Improvements applied
+
+#### 1. Limiting critical tasks displayed
 ```js
 const CRITICAL_TASKS_MAX = 4;
 
@@ -163,29 +149,21 @@ const visibleTasks = criticalTasks
     .slice(0, CRITICAL_TASKS_MAX);
 ```
 
-✔ Mejora:
-
-* Interfaz más limpia
-* Evita sobrecarga visual
+✔ Why it matters: cleaner interface, avoids visual overload.
 
 ---
 
-### 2. Mensaje informativo dinámico
-
+#### 2. Dynamic informational message
 ```js
 criticalSummary.textContent =
     `These are your oldest critical tasks — ${criticalTasks.length} in total. Make sure to keep up ;)`;
 ```
 
-✔ Mejora:
-
-* Feedback claro al usuario
-* Mejora la percepción de control
+✔ Why it matters: clear feedback for the user, improves sense of control.
 
 ---
 
-### 3. Mejora visual del listado
-
+#### 3. Visual improvement of the list
 ```css
 #criticalList {
     display: flex;
@@ -194,15 +172,11 @@ criticalSummary.textContent =
 }
 ```
 
-✔ Mejora:
-
-* Separación clara entre elementos
-* Mejor legibilidad
+✔ Why it matters: clear separation between items, better readability.
 
 ---
 
-### 4. Estilización del mensaje
-
+#### 4. Styling the summary message
 ```css
 .critical-summary {
     background: var(--accent-dim);
@@ -210,40 +184,85 @@ criticalSummary.textContent =
 }
 ```
 
-✔ Mejora:
-
-* Se percibe como alerta importante
-* Mejor jerarquía visual
+✔ Why it matters: visually reads as an important alert, improves hierarchy.
 
 ---
 
-## 🎯 Resultado
+### 🎯 Result
 
-* Interfaz más clara y usable
-* Mejor experiencia de usuario
-* Información priorizada correctamente
-
----
-
-# 🧩 Conclusión
-
-Cursor permitió:
-
-* Detectar errores estructurales importantes
-* Mejorar la organización del código
-* Aumentar la robustez de la aplicación
-* Elevar significativamente la calidad de la experiencia de usuario
-
-Estas mejoras han hecho que la aplicación pase de ser funcional a ser **más profesional, mantenible y escalable**.
+* Cleaner and more usable interface
+* Better user experience
+* Information correctly prioritised
 
 ---
 
-# Shortcuts
+## 🧩 Conclusion
+
+Cursor made it possible to:
+
+* Detect important structural errors early
+* Improve code organisation
+* Increase application robustness
+* Significantly raise the quality of the user experience
+
+These improvements took the application from functional to **more professional, maintainable and scalable**.
+
+---
+
+## ⌨️ Shortcuts
+
 Most used shortcuts:
-- Tab (accept suggestion)
-- Ctrl + K (comands tab in terminal)
-- Ctrl + Shit + V (readme layout)
-- Ctrl + S (save manualy)
-- Ctrl + Z (go back 1 change)
-- Ctrl + Y (go foward 1 change)
-- Ctrl + V (paste)
+
+| Shortcut | Action |
+|---|---|
+| `Tab` | Accept suggestion |
+| `Ctrl + K` | Commands tab in terminal |
+| `Ctrl + Shift + V` | Preview README layout |
+| `Ctrl + S` | Save manually |
+| `Ctrl + Z` | Undo last change |
+| `Ctrl + Y` | Redo last change |
+| `Ctrl + V` | Paste |
+
+---
+
+## 🔧 MCP GitHub Installation
+
+### Prerequisites
+
+You will need a GitHub personal access token. It is recommended to set an expiration date for security reasons.
+
+To create one: GitHub → Settings → Developer settings → Personal access tokens → Generate new token. Give it `repo`, `read:org` and `read:user` permissions.
+
+### Setup in Cursor
+
+1. Open Cursor Settings and search for **MCP**, then select **Tools & MCP**
+2. Click **Add new MCP Server**
+3. This opens a `mcp.json` file where you configure the server:
+```json
+{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "your_token_here"
+      }
+    }
+  }
+}
+```
+
+### Verify the connection
+
+**Option 1 — Via Cursor Settings:** check that the GitHub MCP entry appears with a green dot.
+
+**Option 2 — Via terminal:**
+```bash
+npx -y @modelcontextprotocol/server-github
+```
+
+Expected output:
+```bash
+GitHub MCP Server running on stdio
+```
+**Option 3 — Via the Agent:** ask it to list your repositories or create a new one. If it responds with real data, the connection is working.

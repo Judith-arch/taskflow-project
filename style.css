@@ -1364,3 +1364,15 @@ kbd {
 .light .kb-inner           { background: #fff; box-shadow: 0 8px 32px rgba(0,0,0,.12); }
 .light .task-notes-input   { background: rgba(0,0,0,.03); border-color: rgba(0,0,0,.12); }
 .light .task-title-editable:hover { background: rgba(212,144,58,.1); }
+
+
+@keyframes flashSuccess {
+    0%   { box-shadow: 0 0 0 0 rgba(76, 175, 114, 0.6); }
+    50%  { box-shadow: 0 0 0 8px rgba(76, 175, 114, 0.2); }
+    100% { box-shadow: 0 0 0 0 rgba(76, 175, 114, 0); }
+}
+
+.flash-success {
+    animation: flashSuccess 0.6s ease-out;
+    border-left: 4px solid #4caf72 !important;
+}

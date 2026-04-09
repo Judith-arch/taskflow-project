@@ -222,6 +222,8 @@ Most used shortcuts:
 | `Ctrl + Z` | Undo last change |
 | `Ctrl + Y` | Redo last change |
 | `Ctrl + V` | Paste |
+| `Ctrl + ç` | Coment line or selected text |
+| `Ctrl + F` | Find text |
 
 ---
 

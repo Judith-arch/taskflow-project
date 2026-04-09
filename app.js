@@ -205,6 +205,7 @@ document.getElementById('taskForm').addEventListener('submit', function(e) {
     if (!assigned) errs.push('- Assigned person is required');
     if (errs.length) { alert('Please fill in:\n' + errs.join('\n')); return; }
 
+    // Add task
     tasks.push({
         id: Date.now(), title, createdAt: new Date(),
         deadline, completed: false, status, assigned,
@@ -213,7 +214,46 @@ document.getElementById('taskForm').addEventListener('submit', function(e) {
     document.getElementById('taskForm').reset();
     renderTasks();
     saveTasks();
+
+    showFlash();
 });
+
+function showFlash(message = "¡Tarea añadida!") {
+    // Create div each time
+    const flash = document.createElement('div');
+    flash.textContent = message;
+
+    // Style
+    Object.assign(flash.style, {
+        position: 'fixed',
+        top: '20px',
+        left: '50%',
+        transform: 'translateX(-50%) translateY(-20px)',
+        backgroundColor: '#4caf50',
+        color: 'white',
+        padding: '8px 16px',
+        borderRadius: '5px',
+        fontWeight: '600',
+        opacity: '0',
+        zIndex: '9999',
+        transition: 'opacity 0.3s, transform 0.3s'
+    });
+
+    // Add to body
+    document.body.appendChild(flash);
+
+    // Animation
+    requestAnimationFrame(() => {
+        flash.style.opacity = '1';
+        flash.style.transform = 'translateX(-50%) translateY(0)';
+    });
+    // Disapears after 1.2 s
+    setTimeout(() => {
+        flash.style.opacity = '0';
+        flash.style.transform = 'translateX(-50%) translateY(-20px)';
+        flash.addEventListener('transitionend', () => flash.remove(), { once: true });
+    }, 1200);
+}
 
 // ── Delete ──────────────────────────────────────────────────
 

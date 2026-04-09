@@ -8,11 +8,13 @@
 </head>
 
 <body>
+
     <header>
         <h1 class="header-logo">
             <span class="logo-dot-inline"></span>
             TaskFlow
         </h1>
+        <button id="helpBtn" onclick="toggleHelpPanel()">? Help</button>
         <button id="darkToggle" onclick="toggleDark()" aria-label="Toggle dark mode"></button>
     </header>
 
@@ -89,7 +91,7 @@
                     <div class="field">
                         <details>
                             <summary style="cursor: pointer; font-weight: 600;">
-                                Subtasks ▾
+                                Subtasks
                             </summary>
                     
                             <div style="margin-top: 8px;">
@@ -237,6 +239,44 @@
         </div>
     </div>
 
+    <!-- Sidebar panel -->
+    <div id="helpPanel" class="help-panel" aria-hidden="true">
+        <div class="help-panel-header">
+            <span class="help-panel-title">Help & Shortcuts</span>
+            <button onclick="toggleHelpPanel()" class="help-panel-close">✕</button>
+        </div>
+
+        <div class="help-section">
+            <div class="help-section-title">Keyboard shortcuts</div>
+            <div class="help-row"><kbd>N</kbd><span>Focus new task form</span></div>
+            <div class="help-row"><kbd>F</kbd><span>Focus search</span></div>
+            <div class="help-row"><kbd>Esc</kbd><span>Cancel editing</span></div>
+            <div class="help-row"><kbd>Enter</kbd><span>Save inline edit</span></div>
+            <div class="help-row"><kbd>?</kbd><span>Toggle this panel</span></div>
+        </div>
+
+        <div class="help-section">
+            <div class="help-section-title">Task statuses</div>
+            <div class="help-row"><span class="help-dot" style="background:#d4903a"></span><span>To-do — pending</span></div>
+            <div class="help-row"><span class="help-dot" style="background:#6a9fd8"></span><span>Doing — in progress</span></div>
+            <div class="help-row"><span class="help-dot" style="background:#b09ad0"></span><span>Review — awaiting approval</span></div>
+            <div class="help-row"><span class="help-dot" style="background:#4caf72"></span><span>Done — completed</span></div>
+            <div class="help-row"><span class="help-dot" style="background:#f06040"></span><span>Cancelled — discarded</span></div>
+        </div>
+
+        <div class="help-section">
+            <div class="help-section-title">Tips</div>
+            <div class="help-tip">Double-click any task title to edit it inline.</div>
+            <div class="help-tip">Pin a task with 📌 to keep it at the top.</div>
+            <div class="help-tip">Tasks due within 5 days appear in Critical.</div>
+            <div class="help-tip">Use filters + Export PDF to print a report.</div>
+        </div>
+    </div>
+
+    <!-- Overlay -->
+    <div id="helpOverlay" class="help-overlay" onclick="toggleHelpPanel()"></div>
+
     <script src="app.js"></script>
+
 </body>
 </html>

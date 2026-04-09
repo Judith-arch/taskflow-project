@@ -788,6 +788,38 @@ function exportToPDF() {
     document.head.appendChild(script);
 }
 
+// ── Help panel ────────────────────────────────────────────
+
+function toggleHelpPanel() {
+    const panel   = document.getElementById('helpPanel');
+    const overlay = document.getElementById('helpOverlay');
+    const isOpen  = panel.classList.contains('open');
+
+    panel.classList.toggle('open', !isOpen);
+    overlay.classList.toggle('open', !isOpen);
+    panel.setAttribute('aria-hidden', isOpen ? 'true' : 'false');
+}
+
+document.addEventListener('keydown', e => {
+    const tag = document.activeElement.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+    if (e.key === '?') toggleHelpPanel();
+    if (e.key === 'n' || e.key === 'N') {
+        e.preventDefault();
+        document.getElementById('title')?.focus();
+    }
+    if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        document.getElementById('search')?.focus();
+    }
+
+    if (e.key === 'Escape') {
+        const panel = document.getElementById('helpPanel');
+        if (panel.classList.contains('open')) toggleHelpPanel();
+    }
+});
+
 // ── Sidebar (kept for future use) ────────────────────────────
 // function toggleSidebar() {
 //     const sidebar = document.getElementById('sidebar');

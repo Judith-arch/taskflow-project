@@ -713,6 +713,81 @@ function toggleSort() {
     renderTasks();
 }
 
+// to export the list to pdf
+function exportToPDF() {
+    const filtered = getFilteredTasks();
+    if (filtered.length === 0) { alert('No tasks to export.'); return; }
+
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    script.onload = () => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Header
+        doc.setFontSize(18);
+        doc.setFont('helvetica', 'bold');
+        doc.text('TaskFlow — Task Export', 14, 20);
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(130);
+        doc.text(`Filter: ${currentFilter}  ·  ${filtered.length} tasks  ·  ${new Date().toLocaleDateString()}`, 14, 28);
+        doc.setTextColor(0);
+
+        // spacing line
+        doc.setDrawColor(220);
+        doc.line(14, 32, 196, 32);
+
+        // table header
+        const cols  = ['Title', 'Status', 'Deadline', 'Assigned', 'Priority'];
+        const widths = [70, 28, 28, 44, 20];
+        let x = 14, y = 42;
+
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.setFillColor(245, 245, 245);
+        doc.rect(14, y - 6, 182, 8, 'F');
+        cols.forEach((col, i) => {
+            doc.text(col, x, y);
+            x += widths[i];
+        });
+
+        // rows
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+
+        filtered.forEach((t, idx) => {
+            y += 10;
+            if (y > 275) { doc.addPage(); y = 20; }
+
+            // alternating rows
+            if (idx % 2 === 0) {
+                doc.setFillColor(252, 252, 252);
+                doc.rect(14, y - 6, 182, 8, 'F');
+            }
+
+            doc.setDrawColor(235);
+            doc.line(14, y + 2, 196, y + 2);
+
+            const priority = { 1: 'Low', 2: 'Medium', 3: 'High' }[t.priority] || 'Low';
+            const values   = [t.title, t.status, t.deadline, t.assigned, priority];
+
+            x = 14;
+            values.forEach((val, i) => {
+                const maxW = widths[i] - 2;
+                const text = doc.splitTextToSize(String(val), maxW)[0]; // 1 line max
+                doc.text(text, x, y);
+                x += widths[i];
+            });
+        });
+
+        doc.save(`taskflow-export-${new Date().toISOString().slice(0,10)}.pdf`);
+    };
+
+    document.head.appendChild(script);
+}
+
 // ── Sidebar (kept for future use) ────────────────────────────
 // function toggleSidebar() {
 //     const sidebar = document.getElementById('sidebar');

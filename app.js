@@ -118,19 +118,36 @@ function renderTasks() {
     const empty = document.getElementById('emptyState');
     if (empty) empty.hidden = filtered.length > 0;
 
-    filtered.forEach(task => {
+    const sorted = [...filtered].sort((a, b) => {
+        if (a.pinned && !b.pinned) return -1;  // pinned task up
+        if (!a.pinned && b.pinned) return 1;
+        return 0;
+    });
+
+    sorted.forEach(task => {
         const li    = document.createElement('li');
         const color = statusColors[task.status] || 'var(--text-muted)';
         const stars = '⭐'.repeat(task.priority || 1);
-
+    
         li.classList.add(`status-${task.status}`);
-        li.innerHTML = buildTaskHTML(task, color, stars);
+        if (task.pinned) li.classList.add('pinned-task');
+        li.innerHTML = buildTaskHTML(task, color, stars, task.pinned); // includes pinned
         taskList.appendChild(li);
     });
 
     updateStats();
     updateCriticalTasks();
     renderCalendar();
+}
+
+// function to pin a task
+function togglePin(taskId) {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    task.pinned = !task.pinned;
+    renderTasks();
+    saveTasks();
 }
 
 /**
@@ -159,7 +176,7 @@ function getFilteredTasks() {
  * @param {string} stars - Star emoji string representing priority
  * @returns {string} HTML string
  */
-function buildTaskHTML(task, color, stars) {
+function buildTaskHTML(task, color, stars, pinned = false) {
     return `
         <div class="task-main">
             <input type="checkbox" onchange="toggleComplete(${task.id}, this)"
@@ -168,6 +185,7 @@ function buildTaskHTML(task, color, stars) {
                 <div class="task-top">
                     <strong>${task.title}</strong>
                     <span class="task-date">${task.deadline}</span>
+                    <button class="pin-btn ${pinned ? 'active' : ''}" onclick="togglePin(${task.id})">📌</button>
                 </div>
                 <div class="task-meta">
                     <select onchange="changeStatus(${task.id}, this.value)"
@@ -207,9 +225,18 @@ document.getElementById('taskForm').addEventListener('submit', function(e) {
 
     // Add task
     tasks.push({
-        id: Date.now(), title, createdAt: new Date(),
-        deadline, completed: false, status, assigned,
-        priority: parseInt(priority), notes: '', tags: [], archived: false
+        id: Date.now(), 
+        title, 
+        createdAt: new Date(),
+        deadline, 
+        completed: false, 
+        pinned: false,
+        status, 
+        assigned,
+        priority: parseInt(priority), 
+        notes: '', // future use
+        tags: [], // future use
+        archived: false 
     });
     document.getElementById('taskForm').reset();
     renderTasks();

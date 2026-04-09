@@ -1365,14 +1365,29 @@ kbd {
 .light .task-notes-input   { background: rgba(0,0,0,.03); border-color: rgba(0,0,0,.12); }
 .light .task-title-editable:hover { background: rgba(212,144,58,.1); }
 
-
-@keyframes flashSuccess {
-    0%   { box-shadow: 0 0 0 0 rgba(76, 175, 114, 0.6); }
-    50%  { box-shadow: 0 0 0 8px rgba(76, 175, 114, 0.2); }
-    100% { box-shadow: 0 0 0 0 rgba(76, 175, 114, 0); }
+/* pin button */
+.pin-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    opacity: 0.2;
+    transition: opacity 0.2s;
+    filter: grayscale(1);
 }
 
-.flash-success {
-    animation: flashSuccess 0.6s ease-out;
-    border-left: 4px solid #4caf72 !important;
+.pin-btn:hover {
+    opacity: 0.6;
+    background: none;
+}
+
+.pin-btn.active {
+    opacity: 1;
+    filter: grayscale(0);
+}
+
+/* Pinned task — borde izquierdo naranja y fondo ligeramente diferente */
+li.pinned-task {
+    border-left: 3px solid var(--color-accent) !important;
+    box-shadow: -2px 0 8px rgba(245, 158, 11, 0.15), 0 1px 4px rgba(0,0,0,0.04);
 }

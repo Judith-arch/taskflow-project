@@ -183,7 +183,7 @@ function buildTaskHTML(task, color, stars, pinned = false) {
                 ${task.status === 'archived' ? 'checked' : ''}>
             <div class="task-content">
                 <div class="task-top">
-                    <strong>${task.title}</strong>
+                    <strong id="title-${task.id}" ondblclick="editTitle(${task.id})" style="cursor:text">${task.title}</strong>
                     <span class="task-date">${task.deadline}</span>
                     <button class="pin-btn ${pinned ? 'active' : ''}" onclick="togglePin(${task.id})">📌</button>
                 </div>
@@ -280,6 +280,58 @@ function showFlash(message = "¡Tarea añadida!") {
         flash.style.transform = 'translateX(-50%) translateY(-20px)';
         flash.addEventListener('transitionend', () => flash.remove(), { once: true });
     }, 1200);
+}
+
+// edit title
+function editTitle(id) {
+    const el = document.getElementById('title-' + id);
+    if (!el || el.tagName === 'INPUT') return;
+    const original = el.textContent;
+
+    const input = document.createElement('input');
+    input.value = original;
+    input.style.cssText = 'font-size:inherit;font-weight:600;font-family:inherit;border:1px solid var(--accent);border-radius:4px;padding:1px 6px;background:var(--bg);color:inherit;outline:none;box-shadow:0 0 0 3px rgba(212,144,58,0.15);min-width:60px;';
+    el.replaceWith(input);
+
+    // Mide el texto con un span espejo
+    function measureText(text) {
+        const ruler = document.createElement('span');
+        ruler.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;font-size:inherit;font-weight:600;font-family:inherit;padding:1px 6px;';
+        ruler.textContent = text || ' ';
+        document.body.appendChild(ruler);
+        const w = ruler.offsetWidth + 4;
+        ruler.remove();
+        return w;
+    }
+
+    input.style.width = measureText(original) + 'px';
+    input.addEventListener('input', () => {
+        input.style.width = measureText(input.value) + 'px';
+    });
+
+    input.focus();
+    input.select();
+
+    function save() {
+        const trimmed = input.value.trim();
+        if (!trimmed) {
+            input.style.borderColor = 'var(--red)';
+            input.focus(); return;
+        }
+        const task = tasks.find(t => t.id === id);
+        if (task) task.title = trimmed;
+        saveTasks(); renderTasks();
+    }
+    function cancel() {
+        renderTasks();
+    }
+
+    input.addEventListener('blur', e => { if (!e.relatedTarget) save(); });
+    input.addEventListener('keydown', e => {
+        if (e.key === 'Enter')  { e.preventDefault(); save(); }
+        if (e.key === 'Escape') { e.preventDefault(); cancel(); }
+        input.style.borderColor = '';
+    });
 }
 
 // ── Delete ──────────────────────────────────────────────────

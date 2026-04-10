@@ -1,0 +1,220 @@
+[
+  {
+    "id": 1000000000001,
+    "title": "Diseñar mockup de la landing page",
+    "createdAt": "2026-03-10T09:00:00.000Z",
+    "deadline": "2026-04-08",
+    "completed": false,
+    "pinned": true,
+    "status": "review",
+    "assigned": "Marta García",
+    "priority": 3,
+    "notes": "",
+    "tags": [],
+    "archived": false,
+    "subtasks": [
+      { "id": 1000000000101, "title": "Wireframe en Figma", "done": true },
+      { "id": 1000000000102, "title": "Paleta de colores aprobada", "done": true },
+      { "id": 1000000000103, "title": "Versión mobile responsive", "done": false },
+      { "id": 1000000000104, "title": "Revisión con el cliente", "done": false }
+    ]
+  },
+  {
+    "id": 1000000000002,
+    "title": "Configurar pipeline de CI/CD",
+    "createdAt": "2026-03-15T10:30:00.000Z",
+    "deadline": "2026-04-12",
+    "completed": false,
+    "pinned": false,
+    "status": "doing",
+    "assigned": "Jordi Puig",
+    "priority": 3,
+    "notes": "",
+    "tags": [],
+    "archived": false,
+    "subtasks": [
+      { "id": 1000000000201, "title": "Configurar GitHub Actions", "done": true },
+      { "id": 1000000000202, "title": "Tests automáticos en PR", "done": true },
+      { "id": 1000000000203, "title": "Deploy automático a staging", "done": false },
+      { "id": 1000000000204, "title": "Notificaciones Slack en fallo", "done": false },
+      { "id": 1000000000205, "title": "Documentar el proceso", "done": false }
+    ]
+  },
+  {
+    "id": 1000000000003,
+    "title": "Redactar informe Q1",
+    "createdAt": "2026-03-20T08:00:00.000Z",
+    "deadline": "2026-04-01",
+    "completed": false,
+    "pinned": false,
+    "status": "to-do",
+    "assigned": "Laura Sánchez",
+    "priority": 2,
+    "notes": "",
+    "tags": [],
+    "archived": false,
+    "subtasks": []
+  },
+  {
+    "id": 1000000000004,
+    "title": "Migración base de datos a PostgreSQL",
+    "createdAt": "2026-03-18T11:00:00.000Z",
+    "deadline": "2026-03-30",
+    "completed": false,
+    "pinned": true,
+    "status": "to-do",
+    "assigned": "Jordi Puig",
+    "priority": 3,
+    "notes": "",
+    "tags": [],
+    "archived": false,
+    "subtasks": [
+      { "id": 1000000000401, "title": "Backup de la BD actual", "done": true },
+      { "id": 1000000000402, "title": "Script de migración", "done": false },
+      { "id": 1000000000403, "title": "Validar integridad de datos", "done": false },
+      { "id": 1000000000404, "title": "Tests de regresión", "done": false }
+    ]
+  },
+  {
+    "id": 1000000000005,
+    "title": "Onboarding nuevo desarrollador",
+    "createdAt": "2026-04-01T09:00:00.000Z",
+    "deadline": "2026-04-15",
+    "completed": false,
+    "pinned": false,
+    "status": "doing",
+    "assigned": "Marta García",
+    "priority": 2,
+    "notes": "",
+    "tags": [],
+    "archived": false,
+    "subtasks": [
+      { "id": 1000000000501, "title": "Accesos a repositorios", "done": true },
+      { "id": 1000000000502, "title": "Setup del entorno local", "done": true },
+      { "id": 1000000000503, "title": "Reunión con el equipo", "done": true },
+      { "id": 1000000000504, "title": "Primera tarea asignada", "done": false }
+    ]
+  },
+  {
+    "id": 1000000000006,
+    "title": "Actualizar dependencias npm",
+    "createdAt": "2026-04-02T10:00:00.000Z",
+    "deadline": "2026-04-20",
+    "completed": false,
+    "pinned": false,
+    "status": "to-do",
+    "assigned": "Alex Torres",
+    "priority": 1,
+    "notes": "",
+    "tags": [],
+    "archived": false,
+    "subtasks": []
+  },
+  {
+    "id": 1000000000007,
+    "title": "Presentación inversores Serie A",
+    "createdAt": "2026-03-25T14:00:00.000Z",
+    "deadline": "2026-04-05",
+    "completed": true,
+    "pinned": false,
+    "status": "done",
+    "assigned": "Laura Sánchez",
+    "priority": 3,
+    "notes": "",
+    "tags": [],
+    "archived": false,
+    "subtasks": [
+      { "id": 1000000000701, "title": "Deck en PowerPoint", "done": true },
+      { "id": 1000000000702, "title": "Métricas actualizadas", "done": true },
+      { "id": 1000000000703, "title": "Ensayo con el equipo", "done": true }
+    ]
+  },
+  {
+    "id": 1000000000008,
+    "title": "Auditoría de seguridad",
+    "createdAt": "2026-03-28T09:00:00.000Z",
+    "deadline": "2026-04-10",
+    "completed": false,
+    "pinned": false,
+    "status": "review",
+    "assigned": "Alex Torres",
+    "priority": 3,
+    "notes": "",
+    "tags": [],
+    "archived": false,
+    "subtasks": [
+      { "id": 1000000000801, "title": "Análisis de vulnerabilidades OWASP", "done": true },
+      { "id": 1000000000802, "title": "Revisión de permisos y roles", "done": true },
+      { "id": 1000000000803, "title": "Informe de hallazgos", "done": false },
+      { "id": 1000000000804, "title": "Plan de mitigación", "done": false }
+    ]
+  },
+  {
+    "id": 1000000000009,
+    "title": "Campaña email marketing abril",
+    "createdAt": "2026-04-01T08:00:00.000Z",
+    "deadline": "2026-04-14",
+    "completed": false,
+    "pinned": false,
+    "status": "cancelled",
+    "assigned": "Marta García",
+    "priority": 2,
+    "notes": "",
+    "tags": [],
+    "archived": false,
+    "subtasks": []
+  },
+  {
+    "id": 1000000000010,
+    "title": "Refactor módulo de autenticación",
+    "createdAt": "2026-03-22T11:00:00.000Z",
+    "deadline": "2026-04-18",
+    "completed": false,
+    "pinned": false,
+    "status": "to-do",
+    "assigned": "Jordi Puig",
+    "priority": 2,
+    "notes": "",
+    "tags": [],
+    "archived": false,
+    "subtasks": [
+      { "id": 1000000001001, "title": "Revisar flujo OAuth2 actual", "done": false },
+      { "id": 1000000001002, "title": "Implementar refresh tokens", "done": false },
+      { "id": 1000000001003, "title": "Tests unitarios", "done": false }
+    ]
+  },
+  {
+    "id": 1000000000011,
+    "title": "Reunión kickoff proyecto beta",
+    "createdAt": "2026-03-30T09:00:00.000Z",
+    "deadline": "2026-04-03",
+    "completed": true,
+    "pinned": false,
+    "status": "archived",
+    "assigned": "Laura Sánchez",
+    "priority": 1,
+    "notes": "",
+    "tags": [],
+    "archived": false,
+    "subtasks": []
+  },
+  {
+    "id": 1000000000012,
+    "title": "Optimizar queries lentas en producción",
+    "createdAt": "2026-04-05T10:00:00.000Z",
+    "deadline": "2026-04-11",
+    "completed": false,
+    "pinned": true,
+    "status": "doing",
+    "assigned": "Alex Torres",
+    "priority": 3,
+    "notes": "",
+    "tags": [],
+    "archived": false,
+    "subtasks": [
+      { "id": 1000000001201, "title": "Identificar queries con EXPLAIN", "done": true },
+      { "id": 1000000001202, "title": "Añadir índices faltantes", "done": false },
+      { "id": 1000000001203, "title": "Caché de resultados frecuentes", "done": false }
+    ]
+  }
+]

@@ -101,6 +101,14 @@ function filterTasks(filter, ev) {
  * Also triggers stats, critical tasks and calendar updates.
  */
 function renderTasks() {
+
+    // Save which task details panels are open before re-rendering
+    const openDetails = new Set(
+        [...document.querySelectorAll('.subtask-details[open]')]
+            .map(el => el.closest('li')?.dataset.taskId)
+            .filter(Boolean)
+    );
+
     const taskList = document.getElementById('taskList');
     taskList.innerHTML = '';
 
@@ -126,6 +134,7 @@ function renderTasks() {
 
     sorted.forEach(task => {
         const li    = document.createElement('li');
+        li.dataset.taskId = task.id; 
         const color = statusColors[task.status] || 'var(--text-muted)';
         const stars = '⭐'.repeat(task.priority || 1);
     
@@ -133,6 +142,14 @@ function renderTasks() {
         if (task.pinned) li.classList.add('pinned-task');
         li.innerHTML = buildTaskHTML(task, color, stars, task.pinned); // includes pinned
         taskList.appendChild(li);
+    });
+
+    // Restore open state of subtask panels
+    document.querySelectorAll('li[data-task-id]').forEach(li => {
+        if (openDetails.has(li.dataset.taskId)) {
+            const det = li.querySelector('.subtask-details');
+            if (det) det.open = true;
+        }
     });
 
     updateStats();
@@ -202,8 +219,83 @@ function buildTaskHTML(task, color, stars, pinned = false) {
                     <span class="task-assigned">👤 ${task.assigned}</span>
                 </div>
             </div>
+            <button onclick="cancelTask(${task.id})" aria-label="Delete task" class="task-cancel">🗑</button>
         </div>
-        <button onclick="cancelTask(${task.id})" aria-label="Delete task" class="task-cancel">🗑</button>`;
+        ${buildSubtasksHTML(task)}`;
+}
+        
+function buildSubtasksHTML(task) {
+    if (!task.subtasks || task.subtasks.length === 0) return '';
+    const done  = task.subtasks.filter(s => s.done).length;
+    const total = task.subtasks.length;
+
+    return `
+        <details class="subtask-details">
+            <summary class="subtask-summary">
+                <span>Subtasks</span>
+                <span class="subtask-count">${done}/${total}</span>
+            </summary>
+            <ul class="subtask-list">
+                ${task.subtasks.map(s => `
+                    <li class="subtask-item ${s.done ? 'subtask-done' : ''}">
+                        <input type="checkbox" ${s.done ? 'checked' : ''}
+                            onchange="toggleSubtask(${task.id}, ${s.id}, this)">
+                        <span ondblclick="editSubtask(${task.id}, ${s.id}, this)">${s.title}</span>
+                        <button type="button" onclick="deleteSubtask(${task.id}, ${s.id})"
+                            class="subtask-delete">✕</button>
+                    </li>`).join('')}
+                <li class="subtask-add-row">
+                    <input type="text" class="subtask-inline-input"
+                        placeholder="Add subtask…"
+                        onkeydown="addInlineSubtask(event, ${task.id})">
+                </li>
+            </ul>
+        </details>`;
+}
+
+// ── Subtasks form input ───────────────────────────────────
+
+let pendingSubtasks = [];
+
+// Show/hide subtask input based on checkbox
+document.getElementById('hasSubtasks').addEventListener('change', function() {
+    document.getElementById('subtasksField').style.display = this.checked ? 'block' : 'none';
+    if (!this.checked) {
+        pendingSubtasks = [];
+        renderPendingSubtasks();
+    }
+});
+
+// Add subtask on Enter
+document.getElementById('subtasksInput').addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    const val = e.target.value.trim();
+    if (!val) return;
+    pendingSubtasks.push({ id: Date.now(), title: val, done: false });
+    e.target.value = '';
+    renderPendingSubtasks();
+});
+
+function renderPendingSubtasks() {
+    let list = document.getElementById('pendingSubtasksList');
+    if (!list) {
+        list = document.createElement('ul');
+        list.id = 'pendingSubtasksList';
+        list.style.cssText = 'list-style:none;padding:0;margin:6px 0 0;display:flex;flex-direction:column;gap:4px;';
+        document.getElementById('subtasksInput').insertAdjacentElement('afterend', list);
+    }
+    list.innerHTML = pendingSubtasks.map((s, i) => `
+        <li style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-subtle);">
+            <span style="flex:1">· ${s.title}</span>
+            <button type="button" onclick="removePendingSubtask(${i})"
+                style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;">✕</button>
+        </li>`).join('');
+}
+
+function removePendingSubtask(index) {
+    pendingSubtasks.splice(index, 1);
+    renderPendingSubtasks();
 }
 
 // ── Form submit ─────────────────────────────────────────────
@@ -236,11 +328,20 @@ document.getElementById('taskForm').addEventListener('submit', function(e) {
         priority: parseInt(priority), 
         notes: '', // future use
         tags: [], // future use
-        archived: false 
+        archived: false,
+        subtasks: [...pendingSubtasks] 
     });
+    pendingSubtasks = [];               // ← limpiar después del push
+    renderPendingSubtasks();            // ← limpiar la lista visual
+    document.getElementById('hasSubtasks').checked = false;        // ← añadir
+    document.getElementById('subtasksField').style.display = 'none'; // ← añadir
+
     document.getElementById('taskForm').reset();
     renderTasks();
     saveTasks();
+
+    // Scroll back to top of task list after adding
+    document.getElementById('taskList').scrollTo({ top: 0, behavior: 'smooth' });
 
     showFlash();
 });
@@ -751,8 +852,8 @@ function exportToPDF() {
         doc.line(14, 32, 196, 32);
 
         // table header
-        const cols  = ['Title', 'Status', 'Deadline', 'Assigned', 'Priority'];
-        const widths = [70, 28, 28, 44, 20];
+        const cols   = ['Title', 'Status', 'Deadline', 'Assigned', 'Priority', 'Subtasks'];
+        const widths = [60, 24, 24, 36, 16, 32];
         let x = 14, y = 42;
 
         doc.setFontSize(9);
@@ -771,26 +872,51 @@ function exportToPDF() {
         filtered.forEach((t, idx) => {
             y += 10;
             if (y > 275) { doc.addPage(); y = 20; }
-
-            // alternating rows
+        
+            // Alternating row background
             if (idx % 2 === 0) {
                 doc.setFillColor(252, 252, 252);
                 doc.rect(14, y - 6, 182, 8, 'F');
             }
-
+        
             doc.setDrawColor(235);
             doc.line(14, y + 2, 196, y + 2);
-
-            const priority = { 1: 'Low', 2: 'Medium', 3: 'High' }[t.priority] || 'Low';
-            const values   = [t.title, t.status, t.deadline, t.assigned, priority];
-
+        
+            const priorityLabel = { 1: 'Low', 2: 'Medium', 3: 'High' }[t.priority] || 'Low';
+            const subtasks      = t.subtasks || [];
+            const subtaskCount  = subtasks.length > 0
+                ? `${subtasks.filter(s => s.done).length}/${subtasks.length}`
+                : '-';
+        
+            const values = [t.title, t.status, t.deadline, t.assigned, priorityLabel, subtaskCount];
+        
             x = 14;
             values.forEach((val, i) => {
-                const maxW = widths[i] - 2;
-                const text = doc.splitTextToSize(String(val), maxW)[0]; // 1 line max
+                const text = doc.splitTextToSize(String(val), widths[i] - 2)[0];
                 doc.text(text, x, y);
                 x += widths[i];
             });
+        
+            // Subtask rows below the task
+            if (subtasks.length > 0) {
+                doc.setFontSize(8);
+                doc.setTextColor(150);
+        
+                subtasks.forEach(s => {
+                    y += 7;
+                    if (y > 275) { doc.addPage(); y = 20; }
+        
+                    const prefix = s.done ? '[done] ' : '[    ] ';
+                    const label  = doc.splitTextToSize(prefix + s.title, 170)[0];
+                    doc.text(label, 20, y);
+        
+                    doc.setDrawColor(245);
+                    doc.line(20, y + 2, 196, y + 2);
+                });
+        
+                doc.setFontSize(9);
+                doc.setTextColor(0);
+            }
         });
 
         doc.save(`taskflow-export-${new Date().toISOString().slice(0,10)}.pdf`);
@@ -807,11 +933,12 @@ function exportToCSV() {
     const priority = { 1: 'Low', 2: 'Medium', 3: 'High' };
     const escape   = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
 
-    const header = ['ID', 'Title', 'Status', 'Deadline', 'Assigned', 'Priority', 'Pinned', 'Created'].join(',');
-    const rows   = filtered.map(t => [
+    const header = ['ID','Title','Status','Deadline','Assigned','Priority','Pinned','Created','Subtasks'].join(',');
+    const rows = filtered.map(t => [
         t.id, t.title, t.status, t.deadline,
         t.assigned, priority[t.priority] || 'Low',
-        t.pinned ? 'Yes' : 'No', t.createdAt ?? ''
+        t.pinned ? 'Yes' : 'No', t.createdAt ?? '',
+        (t.subtasks || []).map(s => `${s.done?'[x]':'[ ]'} ${s.title}`).join(' | ')
     ].map(escape).join(','));
 
     const blob = new Blob([header + '\n' + rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
@@ -909,6 +1036,54 @@ document.addEventListener('keydown', e => {
         if (panel.classList.contains('open')) toggleHelpPanel();
     }
 });
+
+function toggleSubtask(taskId, subtaskId, el) {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    const sub = task.subtasks.find(s => s.id === subtaskId);
+    if (sub) sub.done = el.checked;
+    saveTasks(); renderTasks();
+}
+
+function deleteSubtask(taskId, subtaskId) {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    task.subtasks = task.subtasks.filter(s => s.id !== subtaskId);
+    saveTasks(); renderTasks();
+}
+
+function addInlineSubtask(e, taskId) {
+    if (e.key !== 'Enter') return;
+    const val = e.target.value.trim();
+    if (!val) return;
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    if (!task.subtasks) task.subtasks = [];
+    task.subtasks.push({ id: Date.now(), title: val, done: false });
+    saveTasks(); renderTasks();
+}
+
+function editSubtask(taskId, subtaskId, el) {
+    const original = el.textContent;
+    const input = document.createElement('input');
+    input.value = original;
+    input.style.cssText = 'font-size:inherit;font-family:inherit;border:1px solid var(--accent);border-radius:3px;padding:0 4px;background:var(--bg);color:inherit;outline:none;width:120px;';
+    el.replaceWith(input);
+    input.focus(); input.select();
+    const save = () => {
+        const val = input.value.trim();
+        if (!val) { renderTasks(); return; }
+        const task = tasks.find(t => t.id === taskId);
+        const sub  = task?.subtasks.find(s => s.id === subtaskId);
+        if (sub) sub.title = val;
+        saveTasks(); renderTasks();
+    };
+    input.addEventListener('blur', save);
+    input.addEventListener('keydown', e => {
+        if (e.key === 'Enter')  { e.preventDefault(); save(); }
+        if (e.key === 'Escape') { e.preventDefault(); renderTasks(); }
+    });
+}
 
 // ── Sidebar (kept for future use) ────────────────────────────
 // function toggleSidebar() {

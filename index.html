@@ -89,15 +89,13 @@
                     </div>
 
                     <div class="field">
-                        <details>
-                            <summary style="cursor: pointer; font-weight: 600;">
-                                Subtasks
-                            </summary>
-                    
-                            <div style="margin-top: 8px;">
-                                <input type="text" id="subtasksInput" placeholder="Add a subtask…">
-                            </div>
-                        </details>
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" id="hasSubtasks" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;">
+                            <span style="font-size:11px;font-weight:700;color:var(--text-subtle);letter-spacing:0.09em;text-transform:uppercase;font-family:var(--font-mono);">Has subtasks</span>
+                        </label>
+                        <div id="subtasksField" style="display:none;margin-top:8px;">
+                            <input type="text" id="subtasksInput" placeholder="Add a subtask… (Enter to confirm)">
+                        </div>
                     </div>
 
                     <button class="addTask" type="submit">+ Add Task</button>

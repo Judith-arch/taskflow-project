@@ -713,6 +713,17 @@ function toggleSort() {
     renderTasks();
 }
 
+function toggleExportMenu() {
+    document.getElementById('exportMenu').classList.toggle('open');
+}
+
+// Cerrar si se hace click fuera
+document.addEventListener('click', e => {
+    if (!e.target.closest('.export-dropdown')) {
+        document.getElementById('exportMenu')?.classList.remove('open');
+    }
+});
+
 // to export the list to pdf
 function exportToPDF() {
     const filtered = getFilteredTasks();
@@ -786,6 +797,85 @@ function exportToPDF() {
     };
 
     document.head.appendChild(script);
+}
+
+// ── Export CSV ────────────────────────────────────────────
+function exportToCSV() {
+    const filtered = getFilteredTasks();
+    if (filtered.length === 0) { alert('No tasks to export.'); return; }
+
+    const priority = { 1: 'Low', 2: 'Medium', 3: 'High' };
+    const escape   = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+
+    const header = ['ID', 'Title', 'Status', 'Deadline', 'Assigned', 'Priority', 'Pinned', 'Created'].join(',');
+    const rows   = filtered.map(t => [
+        t.id, t.title, t.status, t.deadline,
+        t.assigned, priority[t.priority] || 'Low',
+        t.pinned ? 'Yes' : 'No', t.createdAt ?? ''
+    ].map(escape).join(','));
+
+    const blob = new Blob([header + '\n' + rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = Object.assign(document.createElement('a'), {
+        href: url, download: `taskflow-${new Date().toISOString().slice(0,10)}.csv`
+    });
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// ── Export JSON ───────────────────────────────────────────
+function exportToJSON() {
+    if (tasks.length === 0) { alert('No tasks to export.'); return; }
+
+    const blob = new Blob([JSON.stringify(tasks, null, 2)], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = Object.assign(document.createElement('a'), {
+        href: url, download: `taskflow-backup-${new Date().toISOString().slice(0,10)}.json`
+    });
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// ── Import JSON ───────────────────────────────────────────
+function importFromJSON() {
+    const input = document.createElement('input');
+    input.type  = 'file';
+    input.accept = '.json';
+
+    input.onchange = e => {
+        const file   = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+
+        reader.onload = ev => {
+            try {
+                const imported = JSON.parse(ev.target.result.trim().replace(/^\uFEFF/, ''));
+                if (!Array.isArray(imported)) throw new Error();
+
+                const merge = confirm(
+                    `Import ${imported.length} tasks?\n\nOK = merge with existing\nCancel = replace all`
+                );
+
+                if (merge) {
+                    // evitar IDs duplicados
+                    const maxId  = tasks.reduce((m, t) => Math.max(m, t.id), 0);
+                    let   offset = maxId + 1;
+                    imported.forEach(t => { t.id = offset++; });
+                    tasks.push(...imported);
+                } else {
+                    tasks = imported;
+                }
+
+                saveTasks();
+                location.reload(); // recharge the web, it read the localstorage
+            } catch(err) {
+                alert('Error: ' + err.message);
+            }
+        };
+        reader.readAsText(file);
+    };
+
+    input.click();
 }
 
 // ── Help panel ────────────────────────────────────────────

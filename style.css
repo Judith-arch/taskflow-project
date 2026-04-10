@@ -1537,3 +1537,63 @@ li.pinned-task {
     background: var(--accent-dim);
     opacity: 1;
 }
+
+.export-dropdown {
+    position: relative;
+    display: flex;
+}
+
+.export-main {
+    border-radius: var(--r-sm) 0 0 var(--r-sm);
+    border-right: 1px solid rgba(255,255,255,0.2);
+}
+
+.export-arrow {
+    border-radius: 0 var(--r-sm) var(--r-sm) 0;
+    padding: 6px 10px;
+}
+
+/* comparten estilos base del botón que ya tengas */
+.export-main, .export-arrow {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.export-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-sm);
+    min-width: 160px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    z-index: 200;
+    overflow: hidden;
+}
+
+.export-menu.open { display: block; }
+
+.export-menu button {
+    display: block;
+    width: 100%;
+    padding: 9px 14px;
+    text-align: left;
+    background: none;
+    border: none;
+    font-size: 13px;
+    color: var(--text);
+    cursor: pointer;
+}
+
+.export-menu button:hover { background: var(--bg-elevated); }
+
+.export-menu hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 4px 0;
+}

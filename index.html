@@ -110,7 +110,17 @@
                             <input type="search" id="search" placeholder="Search tasks…">
                         </div>
                         <button onclick="toggleSort()" id="sortBtn" class="sort-btn" aria-label="Toggle sort order">↑↓</button>
-                        <button onclick="exportToPDF()" id="exportBtn">⬇ Export PDF</button>
+                        <div class="export-dropdown">
+                            <button class="export-main" onclick="exportToPDF()">⬇ Export PDF</button>
+                            <button class="export-arrow" onclick="toggleExportMenu()">▾</button>
+                            <div class="export-menu" id="exportMenu">
+                                <button onclick="exportToPDF();   toggleExportMenu()">⬇ Export PDF</button>
+                                <button onclick="exportToCSV();   toggleExportMenu()">⬇ Export CSV</button>
+                                <button onclick="exportToJSON();  toggleExportMenu()">⬇ Export JSON</button>
+                                <hr>
+                                <button onclick="importFromJSON(); toggleExportMenu()">⬆ Import JSON</button>
+                            </div>
+                        </div>
                     </div>
                     <div class="filters">
                         <button onclick="filterTasks('all', event)" class="filter-btn active">All</button>

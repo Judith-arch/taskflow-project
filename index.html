@@ -47,6 +47,8 @@
             <header class="main-header">
                 <div class="main-header-left">
                     <h2 class="project-title">Project Name</h2>
+                    <span class="project-subtitle">TaskFlow · Last updated today</span>
+                </div>
             </header>
 
             <!-- TOP: form + task list -->
@@ -194,7 +196,10 @@
             <!-- BOTTOM: critical tasks + calendar -->
             <div class="bottom-section">
                 <div class="critical-tasks">
-                    <h3>Critical tasks</h3>
+                    <div class="critical-tasks-header">
+                        <h3>Critical tasks</h3>
+                        <span class="critical-tasks-badge" id="criticalBadge" hidden></span>
+                    </div>
                     <p id="criticalSummary" class="critical-summary" hidden aria-live="polite"></p>
                     <ul id="criticalList"></ul>
                 </div>

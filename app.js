@@ -592,15 +592,7 @@ function updateStats() {
  * Updates the quick-stat pills in the main header.
  * @param {{todo: number, inProgress: number, completed: number, total: number}} stats
  */
-function updateHeaderPills({ todo, inProgress, completed, total }) {
-    const el = document.getElementById('headerStats');
-    if (!el) return;
-    if (total === 0) { el.innerHTML = ''; return; }
-    el.innerHTML = `
-        <div class="header-pill"><div class="header-pill-dot" style="background:var(--accent)"></div>${todo} to-do</div>
-        <div class="header-pill"><div class="header-pill-dot" style="background:var(--blue)"></div>${inProgress} in progress</div>
-        <div class="header-pill"><div class="header-pill-dot" style="background:var(--green)"></div>${completed} done</div>`;
-}
+function updateHeaderPills() { /* pills removed */ }
 
 // ── Donut chart ──────────────────────────────────────────────
 
@@ -685,24 +677,19 @@ function updateCriticalTasks() {
     }
 
     if (summaryEl) {
-        if (critical.length > CRITICAL_TASKS_MAX) {
-            summaryEl.hidden = false;
-            summaryEl.textContent = `Showing ${CRITICAL_TASKS_MAX} of ${critical.length} critical tasks — stay on top of it!`;
-        } else {
-            summaryEl.hidden = true;
-            summaryEl.textContent = '';
+        const badgeEl = document.getElementById('criticalBadge');
+        if (badgeEl) {
+            badgeEl.hidden = false;
+            badgeEl.textContent = `${Math.min(critical.length, CRITICAL_TASKS_MAX)} of ${critical.length}`;
         }
+        summaryEl.hidden = true; // badge already shows the count
     }
 
     critical.slice(0, CRITICAL_TASKS_MAX).forEach(t => {
         const li        = document.createElement('li');
         const isOverdue = new Date(t.deadline) < today;
-        li.textContent     = `${isOverdue ? '⚠️' : '🔔'} ${t.title} — ${t.deadline}`;
-        li.style.fontSize  = '12px';
-        li.style.color     = isOverdue ? '#f06040' : 'var(--accent)';
-        li.style.background= isOverdue ? 'rgba(240,96,64,0.08)' : 'var(--accent-dim)';
-        li.style.border    = isOverdue ? '1px solid rgba(240,96,64,0.2)' : '1px solid var(--border-strong)';
-        li.style.fontWeight= '500';
+        li.classList.add(isOverdue ? 'critical-item--overdue' : 'critical-item--upcoming');
+        li.textContent = `${isOverdue ? '⚠️' : '🔔'} ${t.title} — ${t.deadline}`;
         criticalList.appendChild(li);
     });
 }

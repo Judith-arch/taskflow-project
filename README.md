@@ -177,23 +177,54 @@ taskflow-project/
 ├── .gitignore
 ├── README.md
 └── docs/
-    └── design/
-    |   └── Excalidra_all_wireframe.png
-    |   └── final_design.png
-    |   └── pototype_1.png
-    |   └── task.png
-    └── ai/
-    |   └── ai-comparison.md
-    |   └── cursor-workflow.md
-    |   └── experiments.md
-    |   └── promt-engineering.md
-    |   └── reflection.md
-    └── exports/
-        └── taskflow-2026-04-10.csv
-        └── taskflow-backup-2026-04-10.json
-        └── taskflow-export-2026-04-10.pdf
-
+│   └── design/
+│   |   └── Excalidra_all_wireframe.png
+│   |   └── final_design.png
+│   |   └── pototype_1.png
+│   |   └── task.png
+│   └── ai/
+│   |   └── ai-comparison.md
+│   |   └── cursor-workflow.md
+│   |   └── experiments.md
+│   |   └── promt-engineering.md
+│   |   └── reflection.md
+│   └── exports/
+│       └── taskflow-2026-04-10.csv
+│       └── taskflow-backup-2026-04-10.json
+│       └── taskflow-export-2026-04-10.pdf
+├── api/
+│   └── client.js                 ← new: all fetch() calls live here
+├── .postman/
+└── server/                       ← new: entire backend
+    ├── .env                      ← PORT=3000 (git-ignored)
+    ├── .gitignore                 ← node_modules + .env
+    ├── package.json
+    └── src/
+        ├── index.js              ← entry point, middlewares, error handler
+        ├── config/
+        │   └── env.js            ← dotenv loader + validation
+        ├── services/
+        │   └── task.service.js   ← pure logic, in-memory array
+        ├── controllers/
+        │   └── task.controller.js ← req/res handling, validation
+        └── routes/
+            └── task.routes.js    ← verb → controller mapping
 ```
+```
+---
+ 
+## 🌐 Deploy on Vercel
+ 
+Since this project has no build step, deploying to Vercel is straightforward.
+ 
+### From the Vercel dashboard
+ 
+1. Push your code to GitHub (the repo must be public or you need a Vercel account linked to GitHub).
+2. Go to [vercel.com](https://vercel.com) and click **Add New → Project**.
+3. Import your GitHub repository (`taskflow-project`).
+4. Vercel will auto-detect it as a static site. Leave all settings as default — no framework, no build command, no output directory needed.
+5. Click **Deploy**. Done.
+Every time you push to `main`, Vercel will redeploy automatically.
 
 ---
 

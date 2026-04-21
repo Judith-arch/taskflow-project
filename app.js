@@ -18,6 +18,37 @@ const CRITICAL_TASKS_MAX = 4;
 const LS_SKIP_DELETE_CONFIRM  = 'taskflow-skip-delete-confirm';
 const LS_SKIP_ARCHIVE_CONFIRM = 'taskflow-skip-archive-confirm';
 
+const DONUT_COLORS = {
+    donutTodo:      '#d4903a',
+    donutDoing:     '#6a9fd8',
+    donutDone:      '#4caf72',
+    donutCancelled: '#f06040'
+};
+
+// ── Loading / Error UI states ────────────────────────────────
+
+// Shows a loading indicator in the task list area
+function showLoadingState() {
+    const list = document.getElementById('taskList');
+    if (list) list.innerHTML = `
+        <li style="text-align:center; padding: 24px; color: var(--text-muted); 
+            font-family: var(--font-mono); font-size: 13px; border: none; 
+            background: none;">
+            Loading tasks…
+        </li>`;
+}
+
+// Shows an error message in the task list area
+function showErrorState(message) {
+    const list = document.getElementById('taskList');
+    if (list) list.innerHTML = `
+        <li style="text-align:center; padding: 24px; color: var(--red); 
+            font-family: var(--font-mono); font-size: 13px; border: none;
+            background: none;">
+            ⚠ ${message}
+        </li>`;
+}
+
 // ── Confirm dialog ──────────────────────────────────────────
 
 /**
@@ -72,13 +103,6 @@ function confirmAction(options) {
     });
 }
 
-/**
- * Persists the current tasks array to localStorage.
- */
-function saveTasks() {
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-}
-
 // ── Filter ──────────────────────────────────────────────────
 
 /**
@@ -127,20 +151,20 @@ function renderTasks() {
     if (empty) empty.hidden = filtered.length > 0;
 
     const sorted = [...filtered].sort((a, b) => {
-        if (a.pinned && !b.pinned) return -1;  // pinned task up
+        if (a.pinned && !b.pinned) return -1;
         if (!a.pinned && b.pinned) return 1;
         return 0;
     });
 
     sorted.forEach(task => {
         const li    = document.createElement('li');
-        li.dataset.taskId = task.id; 
+        li.dataset.taskId = task.id;
         const color = statusColors[task.status] || 'var(--text-muted)';
         const stars = '⭐'.repeat(task.priority || 1);
-    
+
         li.classList.add(`status-${task.status}`);
         if (task.pinned) li.classList.add('pinned-task');
-        li.innerHTML = buildTaskHTML(task, color, stars, task.pinned); // includes pinned
+        li.innerHTML = buildTaskHTML(task, color, stars, task.pinned);
         taskList.appendChild(li);
     });
 
@@ -157,14 +181,13 @@ function renderTasks() {
     renderCalendar();
 }
 
-// function to pin a task
+// ── Pin ──────────────────────────────────────────────────────
+
 function togglePin(taskId) {
     const task = tasks.find(t => t.id === taskId);
     if (!task) return;
-
     task.pinned = !task.pinned;
     renderTasks();
-    saveTasks();
 }
 
 /**
@@ -191,6 +214,7 @@ function getFilteredTasks() {
  * @param {Object} task - Task object
  * @param {string} color - CSS color string for the status dropdown
  * @param {string} stars - Star emoji string representing priority
+ * @param {boolean} pinned - Whether the task is pinned
  * @returns {string} HTML string
  */
 function buildTaskHTML(task, color, stars, pinned = false) {
@@ -223,7 +247,7 @@ function buildTaskHTML(task, color, stars, pinned = false) {
         </div>
         ${buildSubtasksHTML(task)}`;
 }
-        
+
 function buildSubtasksHTML(task) {
     if (!task.subtasks || task.subtasks.length === 0) return '';
     const done  = task.subtasks.filter(s => s.done).length;
@@ -298,9 +322,9 @@ function removePendingSubtask(index) {
     renderPendingSubtasks();
 }
 
-// ── Form submit ─────────────────────────────────────────────
+// ── Form submit — uses API ───────────────────────────────────
 
-document.getElementById('taskForm').addEventListener('submit', function(e) {
+document.getElementById('taskForm').addEventListener('submit', async function(e) {
     e.preventDefault();
 
     const title    = document.getElementById('title').value.trim();
@@ -315,43 +339,34 @@ document.getElementById('taskForm').addEventListener('submit', function(e) {
     if (!assigned) errs.push('- Assigned person is required');
     if (errs.length) { alert('Please fill in:\n' + errs.join('\n')); return; }
 
-    // Add task
-    tasks.push({
-        id: Date.now(), 
-        title, 
-        createdAt: new Date(),
-        deadline, 
-        completed: false, 
-        pinned: false,
-        status, 
-        assigned,
-        priority: parseInt(priority), 
-        notes: '', // future use
-        tags: [], // future use
-        archived: false,
-        subtasks: [...pendingSubtasks] 
-    });
-    pendingSubtasks = [];               // ← limpiar después del push
-    renderPendingSubtasks();            // ← limpiar la lista visual
-    document.getElementById('hasSubtasks').checked = false;        // ← añadir
-    document.getElementById('subtasksField').style.display = 'none'; // ← añadir
+    try {
+        const newTask = await window.apiClient.createTask({
+            title,
+            deadline,
+            status,
+            assigned,
+            priority: parseInt(priority),
+            subtasks: [...pendingSubtasks]
+        });
 
-    document.getElementById('taskForm').reset();
-    renderTasks();
-    saveTasks();
-
-    // Scroll back to top of task list after adding
-    document.getElementById('taskList').scrollTo({ top: 0, behavior: 'smooth' });
-
-    showFlash();
+        tasks.push(newTask);
+        pendingSubtasks = [];
+        renderPendingSubtasks();
+        document.getElementById('hasSubtasks').checked = false;
+        document.getElementById('subtasksField').style.display = 'none';
+        document.getElementById('taskForm').reset();
+        renderTasks();
+        showFlash('Task added!');
+        document.getElementById('taskList').scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+        alert('Error creating task: ' + err.message);
+    }
 });
 
-function showFlash(message = "¡Tarea añadida!") {
-    // Create div each time
+function showFlash(message = 'Task added!') {
     const flash = document.createElement('div');
     flash.textContent = message;
 
-    // Style
     Object.assign(flash.style, {
         position: 'fixed',
         top: '20px',
@@ -367,15 +382,13 @@ function showFlash(message = "¡Tarea añadida!") {
         transition: 'opacity 0.3s, transform 0.3s'
     });
 
-    // Add to body
     document.body.appendChild(flash);
 
-    // Animation
     requestAnimationFrame(() => {
         flash.style.opacity = '1';
         flash.style.transform = 'translateX(-50%) translateY(0)';
     });
-    // Disapears after 1.2 s
+
     setTimeout(() => {
         flash.style.opacity = '0';
         flash.style.transform = 'translateX(-50%) translateY(-20px)';
@@ -383,7 +396,8 @@ function showFlash(message = "¡Tarea añadida!") {
     }, 1200);
 }
 
-// edit title
+// ── Edit title ───────────────────────────────────────────────
+
 function editTitle(id) {
     const el = document.getElementById('title-' + id);
     if (!el || el.tagName === 'INPUT') return;
@@ -394,7 +408,6 @@ function editTitle(id) {
     input.style.cssText = 'font-size:inherit;font-weight:600;font-family:inherit;border:1px solid var(--accent);border-radius:4px;padding:1px 6px;background:var(--bg);color:inherit;outline:none;box-shadow:0 0 0 3px rgba(212,144,58,0.15);min-width:60px;';
     el.replaceWith(input);
 
-    // Mide el texto con un span espejo
     function measureText(text) {
         const ruler = document.createElement('span');
         ruler.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;font-size:inherit;font-weight:600;font-family:inherit;padding:1px 6px;';
@@ -421,11 +434,9 @@ function editTitle(id) {
         }
         const task = tasks.find(t => t.id === id);
         if (task) task.title = trimmed;
-        saveTasks(); renderTasks();
-    }
-    function cancel() {
         renderTasks();
     }
+    function cancel() { renderTasks(); }
 
     input.addEventListener('blur', e => { if (!e.relatedTarget) save(); });
     input.addEventListener('keydown', e => {
@@ -435,10 +446,10 @@ function editTitle(id) {
     });
 }
 
-// ── Delete ──────────────────────────────────────────────────
+// ── Delete — uses API ────────────────────────────────────────
 
 /**
- * Prompts for confirmation and permanently deletes a task.
+ * Prompts for confirmation and permanently deletes a task via the API.
  * @param {number} id - Task ID
  */
 async function cancelTask(id) {
@@ -449,16 +460,21 @@ async function cancelTask(id) {
         confirmLabel: 'Delete'
     });
     if (!ok) return;
-    tasks = tasks.filter(t => t.id !== id);
-    renderTasks();
-    saveTasks();
+
+    try {
+        await window.apiClient.deleteTask(id);
+        tasks = tasks.filter(t => t.id !== id);
+        renderTasks();
+    } catch (err) {
+        alert('Error deleting task: ' + err.message);
+    }
 }
 
 // ── Archive / unarchive ─────────────────────────────────────
 
 /**
  * Toggles a task between archived and to-do.
- * Archiving requires confirmation. Unarchiving is instant.
+ * Note: archive state is local-only until a PATCH endpoint is added to the API.
  * @param {number} id - Task ID
  * @param {HTMLInputElement} checkbox - The checkbox element that triggered the change
  */
@@ -479,7 +495,6 @@ async function toggleComplete(id, checkbox) {
         tasks = tasks.map(t => t.id === id ? { ...t, status: 'archived', completed: true } : t);
     }
     renderTasks();
-    saveTasks();
 }
 
 // ── Status dropdown ─────────────────────────────────────────
@@ -495,14 +510,12 @@ function changeStatus(id, newStatus) {
         : t
     );
     renderTasks();
-    saveTasks();
 }
 
 // ── Stats ────────────────────────────────────────────────────
 
 /**
  * Calculates task counts and percentages from the current tasks array.
- * @returns {{total: number, completed: number, inProgress: number, todo: number, cancelled: number, archived: number, overdue: number, pct: number}}
  */
 function calcStats() {
     const total      = tasks.length;
@@ -519,10 +532,6 @@ function calcStats() {
     return { total, completed, inProgress, todo, cancelled, archived, overdue, pct };
 }
 
-/**
- * Updates the four stat cards in the overview section.
- * @param {{total: number, completed: number, inProgress: number, todo: number}} stats
- */
 function updateStatCards({ total, completed, inProgress, todo }) {
     const set = (id, label, value) => {
         const el = document.getElementById(id);
@@ -536,10 +545,6 @@ function updateStatCards({ total, completed, inProgress, todo }) {
     set('numTaskTodo',       'To-do',       todo);
 }
 
-/**
- * Updates the linear progress bar and percentage label.
- * @param {number} pct - Completion percentage (0–100)
- */
 function updateProgressBar(pct) {
     const bar = document.getElementById('progressLinearBar');
     const lbl = document.getElementById('progressPct');
@@ -547,10 +552,6 @@ function updateProgressBar(pct) {
     if (lbl) lbl.textContent = pct + '%';
 }
 
-/**
- * Updates the overdue and archived insight rows below the progress bar.
- * @param {{overdue: number, archived: number, total: number}} stats
- */
 function updateInsights({ overdue, archived, total }) {
     const insightOverdue  = document.getElementById('insightOverdue');
     const insightArchived = document.getElementById('insightArchived');
@@ -570,10 +571,6 @@ function updateInsights({ overdue, archived, total }) {
     }
 }
 
-/**
- * Orchestrates all statistics updates: cards, donut, progress bar,
- * insights and header pills.
- */
 function updateStats() {
     const stats = calcStats();
     const { total, completed, inProgress, todo, cancelled, archived, overdue, pct } = stats;
@@ -584,33 +581,13 @@ function updateStats() {
     updateStatCards({ total, completed, inProgress, todo });
     updateProgressBar(pct);
     updateInsights({ overdue, archived, total });
-    updateHeaderPills({ todo, inProgress, completed, total });
+    updateHeaderPills();
     updateDonut(todo, inProgress, completed, cancelled, total);
 }
 
-/**
- * Updates the quick-stat pills in the main header.
- * @param {{todo: number, inProgress: number, completed: number, total: number}} stats
- */
-function updateHeaderPills() { /* pills removed */ }
+// Pills removed — kept as empty function to avoid call errors
+function updateHeaderPills() {}
 
-// ── Donut chart ──────────────────────────────────────────────
-
-const DONUT_COLORS = {
-    donutTodo:      '#d4903a',
-    donutDoing:     '#6a9fd8',
-    donutDone:      '#4caf72',
-    donutCancelled: '#f06040'
-};
-
-/**
- * Renders the SVG donut chart based on current task counts.
- * @param {number} todo
- * @param {number} inProgress
- * @param {number} done
- * @param {number} cancelled
- * @param {number} total
- */
 function updateDonut(todo, inProgress, done, cancelled, total) {
     const circ = 2 * Math.PI * 80;
     const gap  = 3;
@@ -649,10 +626,6 @@ function updateDonut(todo, inProgress, done, cancelled, total) {
 
 // ── Critical tasks ───────────────────────────────────────────
 
-/**
- * Renders the critical tasks panel with tasks that are overdue
- * or due within the next 5 days.
- */
 function updateCriticalTasks() {
     const criticalList = document.getElementById('criticalList');
     const summaryEl    = document.getElementById('criticalSummary');
@@ -682,7 +655,7 @@ function updateCriticalTasks() {
             badgeEl.hidden = false;
             badgeEl.textContent = `${Math.min(critical.length, CRITICAL_TASKS_MAX)} of ${critical.length}`;
         }
-        summaryEl.hidden = true; // badge already shows the count
+        summaryEl.hidden = true;
     }
 
     critical.slice(0, CRITICAL_TASKS_MAX).forEach(t => {
@@ -696,9 +669,6 @@ function updateCriticalTasks() {
 
 // ── Calendar ─────────────────────────────────────────────────
 
-/**
- * Renders the current month calendar, marking days that have task deadlines.
- */
 function renderCalendar() {
     const calendarBody = document.getElementById('calendarBody');
     if (!calendarBody) return;
@@ -741,27 +711,25 @@ document.getElementById('search').addEventListener('input', function() {
     renderTasks();
 });
 
-// ── Load from localStorage ───────────────────────────────────
+// ── Load tasks from API on startup ───────────────────────────
 
-const savedTasks = localStorage.getItem('tasks');
-if (savedTasks) {
+async function loadTasks() {
+    showLoadingState();
     try {
-        const parsed = JSON.parse(savedTasks);
-        if (Array.isArray(parsed)) {
-            tasks = parsed.map(t => {
-                if (t && t.status === 'archived') t.completed = true;
-                return t;
-            });
-        }
-    } catch(e) { tasks = []; }
+        tasks = await window.apiClient.fetchTasks();
+        renderTasks();
+    } catch (err) {
+        showErrorState('Could not connect to the server. Is it running?');
+    }
 }
-renderTasks();
+
+loadTasks();
 
 // ── Dark / Light toggle ──────────────────────────────────────
 
 /**
- * Toggles between dark and light theme, persists the choice
- * and smoothly transitions all colors.
+ * Toggles between dark and light theme.
+ * Theme preference still uses localStorage — this is UI preference, not data.
  */
 function toggleDark() {
     const html = document.documentElement;
@@ -773,9 +741,6 @@ function toggleDark() {
     setTimeout(() => updateStats(), 50);
 }
 
-/**
- * Updates the dark/light toggle button label to reflect the current theme.
- */
 function updateToggleLabel() {
     const isLight = document.documentElement.classList.contains('light');
     const btn = document.getElementById('darkToggle');
@@ -783,6 +748,8 @@ function updateToggleLabel() {
 }
 
 // Load saved theme on startup — default is dark
+// Note: localStorage is still used for UI preferences (theme, dialog skip)
+// Only task DATA has been moved to the API
 (function() {
     const saved = localStorage.getItem('taskflow-theme');
     if (saved === 'light') document.documentElement.classList.add('light');
@@ -792,9 +759,6 @@ function updateToggleLabel() {
 
 // ── Sort ─────────────────────────────────────────────────────
 
-/**
- * Toggles the sort direction and re-renders the task list.
- */
 function toggleSort() {
     sortAscending = !sortAscending;
     document.getElementById('sortBtn').textContent = sortAscending ? '↑↓' : '↓↑';
@@ -805,14 +769,14 @@ function toggleExportMenu() {
     document.getElementById('exportMenu').classList.toggle('open');
 }
 
-// Cerrar si se hace click fuera
 document.addEventListener('click', e => {
     if (!e.target.closest('.export-dropdown')) {
         document.getElementById('exportMenu')?.classList.remove('open');
     }
 });
 
-// to export the list to pdf
+// ── Export PDF ────────────────────────────────────────────────
+
 function exportToPDF() {
     const filtered = getFilteredTasks();
     if (filtered.length === 0) { alert('No tasks to export.'); return; }
@@ -823,7 +787,6 @@ function exportToPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
 
-        // Header
         doc.setFontSize(18);
         doc.setFont('helvetica', 'bold');
         doc.text('TaskFlow — Task Export', 14, 20);
@@ -834,11 +797,9 @@ function exportToPDF() {
         doc.text(`Filter: ${currentFilter}  ·  ${filtered.length} tasks  ·  ${new Date().toLocaleDateString()}`, 14, 28);
         doc.setTextColor(0);
 
-        // spacing line
         doc.setDrawColor(220);
         doc.line(14, 32, 196, 32);
 
-        // table header
         const cols   = ['Title', 'Status', 'Deadline', 'Assigned', 'Priority', 'Subtasks'];
         const widths = [60, 24, 24, 36, 16, 32];
         let x = 14, y = 42;
@@ -847,60 +808,48 @@ function exportToPDF() {
         doc.setFont('helvetica', 'bold');
         doc.setFillColor(245, 245, 245);
         doc.rect(14, y - 6, 182, 8, 'F');
-        cols.forEach((col, i) => {
-            doc.text(col, x, y);
-            x += widths[i];
-        });
+        cols.forEach((col, i) => { doc.text(col, x, y); x += widths[i]; });
 
-        // rows
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(9);
 
         filtered.forEach((t, idx) => {
             y += 10;
             if (y > 275) { doc.addPage(); y = 20; }
-        
-            // Alternating row background
+
             if (idx % 2 === 0) {
                 doc.setFillColor(252, 252, 252);
                 doc.rect(14, y - 6, 182, 8, 'F');
             }
-        
+
             doc.setDrawColor(235);
             doc.line(14, y + 2, 196, y + 2);
-        
+
             const priorityLabel = { 1: 'Low', 2: 'Medium', 3: 'High' }[t.priority] || 'Low';
             const subtasks      = t.subtasks || [];
             const subtaskCount  = subtasks.length > 0
-                ? `${subtasks.filter(s => s.done).length}/${subtasks.length}`
-                : '-';
-        
+                ? `${subtasks.filter(s => s.done).length}/${subtasks.length}` : '-';
+
             const values = [t.title, t.status, t.deadline, t.assigned, priorityLabel, subtaskCount];
-        
             x = 14;
             values.forEach((val, i) => {
                 const text = doc.splitTextToSize(String(val), widths[i] - 2)[0];
                 doc.text(text, x, y);
                 x += widths[i];
             });
-        
-            // Subtask rows below the task
+
             if (subtasks.length > 0) {
                 doc.setFontSize(8);
                 doc.setTextColor(150);
-        
                 subtasks.forEach(s => {
                     y += 7;
                     if (y > 275) { doc.addPage(); y = 20; }
-        
                     const prefix = s.done ? '[done] ' : '[    ] ';
                     const label  = doc.splitTextToSize(prefix + s.title, 170)[0];
                     doc.text(label, 20, y);
-        
                     doc.setDrawColor(245);
                     doc.line(20, y + 2, 196, y + 2);
                 });
-        
                 doc.setFontSize(9);
                 doc.setTextColor(0);
             }
@@ -912,7 +861,8 @@ function exportToPDF() {
     document.head.appendChild(script);
 }
 
-// ── Export CSV ────────────────────────────────────────────
+// ── Export CSV ────────────────────────────────────────────────
+
 function exportToCSV() {
     const filtered = getFilteredTasks();
     if (filtered.length === 0) { alert('No tasks to export.'); return; }
@@ -937,7 +887,8 @@ function exportToCSV() {
     URL.revokeObjectURL(url);
 }
 
-// ── Export JSON ───────────────────────────────────────────
+// ── Export JSON ───────────────────────────────────────────────
+
 function exportToJSON() {
     if (tasks.length === 0) { alert('No tasks to export.'); return; }
 
@@ -950,10 +901,11 @@ function exportToJSON() {
     URL.revokeObjectURL(url);
 }
 
-// ── Import JSON ───────────────────────────────────────────
+// ── Import JSON ───────────────────────────────────────────────
+
 function importFromJSON() {
     const input = document.createElement('input');
-    input.type  = 'file';
+    input.type   = 'file';
     input.accept = '.json';
 
     input.onchange = e => {
@@ -971,7 +923,6 @@ function importFromJSON() {
                 );
 
                 if (merge) {
-                    // evitar IDs duplicados
                     const maxId  = tasks.reduce((m, t) => Math.max(m, t.id), 0);
                     let   offset = maxId + 1;
                     imported.forEach(t => { t.id = offset++; });
@@ -980,8 +931,7 @@ function importFromJSON() {
                     tasks = imported;
                 }
 
-                saveTasks();
-                location.reload(); // recharge the web, it read the localstorage
+                renderTasks();
             } catch(err) {
                 alert('Error: ' + err.message);
             }
@@ -992,7 +942,7 @@ function importFromJSON() {
     input.click();
 }
 
-// ── Help panel ────────────────────────────────────────────
+// ── Help panel ────────────────────────────────────────────────
 
 function toggleHelpPanel() {
     const panel   = document.getElementById('helpPanel');
@@ -1017,26 +967,27 @@ document.addEventListener('keydown', e => {
         e.preventDefault();
         document.getElementById('search')?.focus();
     }
-
     if (e.key === 'Escape') {
         const panel = document.getElementById('helpPanel');
         if (panel.classList.contains('open')) toggleHelpPanel();
     }
 });
 
+// ── Subtask operations ────────────────────────────────────────
+
 function toggleSubtask(taskId, subtaskId, el) {
     const task = tasks.find(t => t.id === taskId);
     if (!task) return;
     const sub = task.subtasks.find(s => s.id === subtaskId);
     if (sub) sub.done = el.checked;
-    saveTasks(); renderTasks();
+    renderTasks();
 }
 
 function deleteSubtask(taskId, subtaskId) {
     const task = tasks.find(t => t.id === taskId);
     if (!task) return;
     task.subtasks = task.subtasks.filter(s => s.id !== subtaskId);
-    saveTasks(); renderTasks();
+    renderTasks();
 }
 
 function addInlineSubtask(e, taskId) {
@@ -1047,7 +998,7 @@ function addInlineSubtask(e, taskId) {
     if (!task) return;
     if (!task.subtasks) task.subtasks = [];
     task.subtasks.push({ id: Date.now(), title: val, done: false });
-    saveTasks(); renderTasks();
+    renderTasks();
 }
 
 function editSubtask(taskId, subtaskId, el) {
@@ -1063,7 +1014,7 @@ function editSubtask(taskId, subtaskId, el) {
         const task = tasks.find(t => t.id === taskId);
         const sub  = task?.subtasks.find(s => s.id === subtaskId);
         if (sub) sub.title = val;
-        saveTasks(); renderTasks();
+        renderTasks();
     };
     input.addEventListener('blur', save);
     input.addEventListener('keydown', e => {
